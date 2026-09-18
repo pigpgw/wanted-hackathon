@@ -159,7 +159,11 @@ export async function execute(input: ExecuteInput): Promise<ExecuteResult> {
   parsed.execution_seconds = Math.round((Date.now() - started) / 1000);
   // 코드 재계산이 가능하면 LLM 자기 검증보다 우선 — LLM은 자기 수치를 그대로 승인하는 경향이 있음
   const cv = codeVerify(parsed.result_artifact, input.sample_data);
-  if (cv) parsed.verification = cv;
+  if (cv) {
+    parsed.verification = cv;
+  } else if (parsed.verification) {
+    parsed.verification.source = "llm"; // 코드 검증 불가 데이터 — AI 검토임을 명시
+  }
   return parsed;
 }
 

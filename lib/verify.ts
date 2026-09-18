@@ -56,6 +56,9 @@ function deriveValues(sample: string): Derived[] {
     } else {
       const uniq = new Set(vals);
       if (uniq.size <= 12 && uniq.size > 0) catCols.push(c);
+      if (uniq.size <= 12 && uniq.size > 1) {
+        out.push({ value: uniq.size, basis: `${header[c]} 종류 수` });
+      }
     }
   }
 
@@ -67,6 +70,11 @@ function deriveValues(sample: string): Derived[] {
     out.push({ value: sum / nums.length, basis: `${name} 평균` });
     out.push({ value: Math.max(...nums), basis: `${name} 최댓값` });
     out.push({ value: Math.min(...nums), basis: `${name} 최솟값` });
+  }
+
+  // 비중 표기가 있는 결과물의 "100%"도 검증되도록 — 전체 비중 합계
+  if (catCols.length > 0 && numericCols.length > 0) {
+    out.push({ value: 100, basis: "전체 비중 합계" });
   }
 
   // 범주형 × 숫자형 그룹 집계 — 합계·건수·비중·평균
@@ -127,8 +135,27 @@ function fmt(n: number): string {
 
 // basis 토큰이 수치가 있는 줄에 얼마나 등장하는지 — 같은 맥락의 유도값 우선 매칭
 function contextScore(d: Derived, line: string): number {
-  const toks = d.basis.split(/[^\w가-힣-]+/).filter((t) => t.length >= 2);
+  const toks = d.basis
+    .replace(/([a-zA-Z0-9])([가-힣])/g, "$1 $2") // "offline의" → "offline 의" — 라틴/한글 경계 분리
+    .replace(/([가-힣])([a-zA-Z0-9])/g, "$1 $2")
+    .split(/[^\w가-힣-]+/)
+    .filter((t) => t.length >= 2);
   return toks.reduce((s, t) => s + (line.includes(t) ? 1 : 0), 0);
+}
+
+// 표 형태(CSV) 샘플인지 — 코드 재계산이 의미 있는 데이터인지 판별
+export function isTabularSample(sample: string): boolean {
+  const lines = sample
+    .trim()
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const rows = lines.map((l) => l.split(","));
+  return (
+    rows.length >= 2 &&
+    rows[0].length >= 2 &&
+    rows.every((r) => r.length === rows[0].length)
+  );
 }
 
 // 코드 재계산 검증 카드 생성 — 유도값이 없으면 null (그때는 LLM 카드에 맡김)
@@ -177,5 +204,6 @@ export function codeVerify(
     summary: `결과물 속 수치 ${items.length}건을 코드로 재계산 — ${ok}건 일치${
       items.length - ok > 0 ? `, ${items.length - ok}건 확인 필요` : ""
     }`,
+    source: "code",
   };
 }

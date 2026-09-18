@@ -9,9 +9,9 @@
 ## 구조
 
 ```
-app/            Next.js App Router — page.tsx + /api/decompose · /api/execute · /api/presets
+app/            Next.js App Router — page.tsx + /api/decompose · /api/execute · /api/presets · /api/revise
 components/     automation-app.tsx (3단계 UI) · ui/ (shadcn 프리미티브)
-lib/            types.ts (API 계약 SoT) · engine.ts (LLM 호출 + mock) · presets.ts (데모 프리셋 캐시)
+lib/            types.ts (API 계약 SoT) · engine.ts (LLM 호출 + mock) · verify.ts (코드 재계산 검증) · presets.ts (데모 프리셋 캐시)
 eval_set/       cases/<id>/ — description.txt + sample.* + expected.json (규격: eval_set/README.md)
 scripts/        eval_run.py (평가셋 실행·채점) · ops_check.sh (배포 생존 확인)
 docs/           service_design.md · measurement.md · process_log.md · contest/ · discovery/ · submission/

@@ -1013,12 +1013,28 @@ export function AutomationApp() {
               {/* v2 — 검증 카드: 결과물 속 수치·사실을 샘플 데이터와 대조 */}
               {executed.verification && executed.verification.items.length > 0 && (
                 <div className="mt-6 rounded-2xl border border-[#d6e8ff] bg-[#f5f9ff] p-5">
-                  <h3 className="flex items-center gap-1.5 text-[15px] font-bold text-[#1b64da]">
-                    <ShieldCheck className="size-4" />
-                    검증 카드
-                  </h3>
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="flex items-center gap-1.5 text-[15px] font-bold text-[#1b64da]">
+                      <ShieldCheck className="size-4" />
+                      검증 카드
+                    </h3>
+                    <span
+                      className={cn(
+                        "rounded-md px-1.5 py-0.5 text-[11px] font-bold",
+                        executed.verification.source === "code"
+                          ? "bg-[#e3f9e9] text-[#00a661]"
+                          : "bg-[#fff3e0] text-[#c26a00]"
+                      )}
+                    >
+                      {executed.verification.source === "code"
+                        ? "코드 재계산"
+                        : "AI 검토"}
+                    </span>
+                  </div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {executed.verification.summary}
+                    {executed.verification.source !== "code" &&
+                      " — 자유 텍스트 데이터는 수치 재계산이 제한됩니다"}
                   </p>
                   <ul className="mt-3 space-y-2.5">
                     {executed.verification.items.map((item, i) => (

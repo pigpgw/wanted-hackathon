@@ -38,6 +38,7 @@ export interface VerificationItem {
 export interface VerificationCard {
   items: VerificationItem[];
   summary: string; // 예: "핵심 수치 5건 재계산 — 4건 일치, 1건 확인 필요"
+  source?: "code" | "llm"; // 코드 재계산 검증 vs AI 검토 — 정직한 출처 구분
 }
 
 export interface ExecuteResult {

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import type { ExecuteInput, ExecutionType } from "@/lib/types";
+import type { ExecuteInput, ExecutionType, ExecuteResult } from "@/lib/types";
 import * as engine from "@/lib/engine";
 import { presets } from "@/lib/presets";
+import { codeVerify, isTabularSample } from "@/lib/verify";
 
 export const maxDuration = 60;
 
@@ -11,6 +12,18 @@ const VALID_TYPES: readonly ExecutionType[] = [
   "integration_needed",
   "human_judgment",
 ];
+
+// 캐시 결과의 검증 카드 출처 정직화 — 표 데이터면 코드 재계산으로 실제 검증, 아니면 AI 검토 표기
+function withVerification(result: ExecuteResult, sample: string): ExecuteResult {
+  const out: ExecuteResult = { ...result, cached: true };
+  if (isTabularSample(sample)) {
+    const cv = codeVerify(result.result_artifact, sample);
+    if (cv) out.verification = cv;
+  } else if (out.verification) {
+    out.verification = { ...out.verification, source: "llm" };
+  }
+  return out;
+}
 
 // LLM 에러/JSON 파싱 실패 시 재시도 (service_design.md §10) — 429면 서버 지정 retryDelay 파싱해 대기, 총 대기 ≤50s
 async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
@@ -106,7 +119,9 @@ export async function POST(req: Request) {
           p.execute[normalized.step.id] !== undefined
       );
   if (preset) {
-    return NextResponse.json({ ...preset.execute[normalized.step.id], cached: true });
+    return NextResponse.json(
+      withVerification(preset.execute[normalized.step.id], normalized.sample_data)
+    );
   }
 
   try {
@@ -121,7 +136,9 @@ export async function POST(req: Request) {
         p.execute[normalized.step.id] !== undefined
     );
     if (fallback) {
-      return NextResponse.json({ ...fallback.execute[normalized.step.id], cached: true });
+      return NextResponse.json(
+        withVerification(fallback.execute[normalized.step.id], normalized.sample_data)
+      );
     }
     return NextResponse.json(
       { error: "실행 실패 — 다시 시도해 주세요" },
