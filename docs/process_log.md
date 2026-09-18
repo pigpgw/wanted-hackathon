@@ -14,6 +14,8 @@
 | 2026-09-18 | RESEARCH | P1 유저 피드백 마이닝 — 한국 근로자 AI 사용 51.8%·시간 3.8%↓·매일 사용자 22%·재작업 주1~2h(31%). 대체재 4종 분석 → "실행" 갭 확인 | `docs/problems.md` P1 — fineirean.com, how-toai.com, moge.ai, qjc.app 등 |
 | 2026-09-18 | DESIGN | 서비스 기획서 — LLM-as-executor, 실행 가능성 3분류, 입출력 계약, non-goals, 2일 타임라인. 스택: Next.js+Vercel+Upstage Solar(OpenAI호환) | `docs/service_design.md` |
 | 2026-09-18 | DESIGN | 제출 문서 초안 4항목 + 이 로그 파일 생성 | `docs/submission_draft.md` |
+| 2026-09-18 | BUILD | 루프 인프라 + 스캐폴드 기초 — hooks·scripts·loop-iterate 스킬·`lib/types.ts`·`lib/presets.ts`(프리셋 3종 캐시)·eval_set 1케이스 | `.devin/`, `scripts/`, `lib/`, `eval_set/` |
+| 2026-09-18 | BUILD | 리포 검수·정리 — API 계약 SoT 통일(eval_run.py↔types.ts), 프리셋 산수 오류 정정, stale S2a 제거, WP1~3 작업 패키지 정의 | `AGENTS.md`, `NEXT.md`, `DECISIONS.md` |
 
 ## 앞으로 기록할 것 (빌드 단계부터)
 

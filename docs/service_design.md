@@ -31,7 +31,9 @@
 
 ## 4. 입출력 계약
 
-### 입력
+> **Source of truth**: 이 표 + `lib/types.ts`. 계약을 바꾸면 `types.ts`·이 섹션·`scripts/eval_run.py`·`scripts/ops_check.sh`를 같은 커밋에서 수정.
+
+### 사용자 입력 (UI)
 | 필드 | 타입 | 필수 | 비고 |
 |---|---|---|---|
 | work_description | string | ✅ | 자유 서술, ~1000자 |
@@ -39,9 +41,13 @@
 | manual_minutes | number | 옵션 | 회당 수동 시간 — before/after에 사용. 없으면 AI 추정치 표시(추정임을 명시) |
 | sample_file | file | 실행 단계에서 필수 | CSV/TXT/MD, ≤500KB. 클라이언트에서 텍스트로 읽어 전송 — 서버 저장 없음 |
 
-### 출력 (API 2개)
+### API 계약 (types.ts의 interface와 1:1)
 
-`POST /api/decompose` →
+`POST /api/decompose` — 입력 `DecomposeInput`:
+```json
+{ "work_description": "...", "frequency": "주 1회", "manual_minutes": 40 }
+```
+→ 출력 `DecomposeResult`:
 ```json
 {
   "task_title": "주간 매출 보고서 작성",
@@ -59,7 +65,17 @@
 }
 ```
 
-`POST /api/execute` →
+`POST /api/execute` — 입력 `ExecuteInput` (분해 결과에서 사용자가 고른 step 객체를 통째로 전달):
+```json
+{
+  "step": { "id": 2, "name": "매출 데이터 정리·주간 집계", "score": 5,
+            "rationale": "...", "execution_type": "executable" },
+  "task_title": "주간 매출 보고서 작성",
+  "sample_data": "date,channel,product,amount\n...",
+  "sample_filename": "sales_week.csv"
+}
+```
+→ 출력 `ExecuteResult`:
 ```json
 {
   "result_artifact": "정제된 표 + 보고서 초안 (마크다운)",
