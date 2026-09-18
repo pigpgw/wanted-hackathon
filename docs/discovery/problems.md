@@ -1,6 +1,6 @@
 # Problems — 원티드 AI Championship 2026
 
-오픈 토픽이므로 심사위원·파트너사 리서치(`docs/research/`)와 공명하는 실제 문제를 도출. 형식: [Who]가 [Situation]에서 [Job]을 하려 할 때 [Obstacle] 때문에 [Impact]가 발생한다 (근거 tier).
+오픈 토픽이므로 심사위원·파트너사 리서치(`docs/contest/research/`)와 공명하는 실제 문제를 도출. 형식: [Who]가 [Situation]에서 [Job]을 하려 할 때 [Obstacle] 때문에 [Impact]가 발생한다 (근거 tier).
 
 ## P1. 직장인의 "자기 업무 해킹" 공백
 

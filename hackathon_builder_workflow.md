@@ -21,7 +21,7 @@ Phase D (본선):     TOP20 시 데모데이 발표 준비 (~10/17)
 
 ## 1. Hackathon Rules 파악 — 완료 ✅
 
-- 산출물: `docs/rules.md`, `docs/submission_checklist.md`
+- 산출물: `docs/contest/rules.md`, `docs/submission/submission_checklist.md`
 - 이 대회의 구조적 특징:
   - **자유 주제** — 출제 문제 없음. "AI로 실제 문제 해결 or 새 가치 창출"이 전부
   - **제출물 = live 서비스 URL** — 데모 영상/레포가 아님. 심사 기간(9/21~10/5) 접속 불가 시 심사 제외
@@ -32,12 +32,12 @@ Phase D (본선):     TOP20 시 데모데이 발표 준비 (~10/17)
 
 ## 2. Problem Discovery — 완료 ✅ (자유 주제이므로 "파악"이 아니라 "발굴")
 
-- 이 대회는 challenge statement가 없으므로, `docs/challenge.md`는 **오픈 토픽 해석 + 제공 리소스 인벤토리(없음 확인)** 로 대체.
+- 이 대회는 challenge statement가 없으므로, `docs/contest/challenge.md`는 **오픈 토픽 해석 + 제공 리소스 인벤토리(없음 확인)** 로 대체.
 - 문제 후보의 소스 (우리가 발굴):
   1. 심사위원·파트너사 관심사 맵과 공명하는 실제 문제
   2. 투표자(=원티드 사용자·구직자일 확률 높음)가 자기 문제로 느낄 문제
   3. 2일 내 live 서비스로 증명 가능한 문제
-- 산출물: `docs/problems.md` — Who/Situation/Job/Obstacle/Impact + 5 Whys + "받은 문제 vs 실제 문제"
+- 산출물: `docs/discovery/problems.md` — Who/Situation/Job/Obstacle/Impact + 5 Whys + "받은 문제 vs 실제 문제"
 
 ## 3. Agent Setup — 완료 ✅
 
@@ -50,13 +50,13 @@ Phase D (본선):     TOP20 시 데모데이 발표 준비 (~10/17)
 ## 4. Research → "What Wins" 지도 — 완료 ✅
 
 - **목적 재정의**: 이 대회에서 회사 리서치는 "출제 문제 이해"가 아니라 **심사 가중치의 숨은 지도**. 심사위원의 소속사·직함·공개 발언이 곧 평가의 숨은 가중치.
-- 수집한 것: 심사위원 5인 소속사(원티드랩·라이너·퍼브·크래프톤·스파크랩) + 파트너사(업스테이지·채널코프·셀렉트스타) — `docs/research/<company>.md` 8개
+- 수집한 것: 심사위원 5인 소속사(원티드랩·라이너·퍼브·크래프톤·스파크랩) + 파트너사(업스테이지·채널코프·셀렉트스타) — `docs/contest/research/<company>.md` 8개
 - 각 파일: History / Business model / Current strategy / Pain points / Recent moves(6개월) / Sources(T1·T2·T3 등급) + **심사 관점 추정**
 - 합성 결과: 전원이 "에이전트가 실제 업무를 끝까지 처리" + "직장인/1인 업무 자동화" + "출처·검증·평가"에 수렴
 
 ## 5~9. Problem Statement → Measurement — 완료 ✅
 
-- `docs/problems.md` (P1~P5 + 유저 피드백·대체재 분석), `docs/opportunity_sizing.md`, `docs/solutions.md`, `docs/decision.md` (ICE + judging fit + 차별성 → **A "업무→실행 자동화기" 채택**), `docs/measurement.md` (North Star: 1회 실행으로 절감된 업무 시간)
+- `docs/discovery/problems.md` (P1~P5 + 유저 피드백·대체재 분석), `docs/discovery/opportunity_sizing.md`, `docs/discovery/solutions.md`, `docs/discovery/decision.md` (ICE + judging fit + 차별성 → **A "업무→실행 자동화기" 채택**), `docs/measurement.md` (North Star: 1회 실행으로 절감된 업무 시간)
 - 결론: "직장인이 '자기 업무 중 뭘 자동화할지' 분해·판단할 도구가 없는 문제를, 업무 서술→단계 분해→자동화 우선순위→샘플 데이터 실제 1회 실행까지 해주는 에이전트로 푼다. 데모 scope = 핵심 플로우 1개."
 
 ## 10. Loop Engineering — 완료 ✅ + 운영 버전 추가
@@ -71,7 +71,7 @@ Phase D (본선):     TOP20 시 데모데이 발표 준비 (~10/17)
 - [ ] 스택 결정: **2주 무료 생존** 기준 — 정적 프론트 + 서버리스 백엔드 + 관리형 LLM API (cold start·rate limit·비용 상한 고려)
 - [ ] 핵심 플로우 1개 구현: 업무 서술 입력 → 분해 맵+자동화 점수 → 단계 선택 → 샘플 실행 결과물 + before/after (`docs/service_design.md` §3)
 - [ ] 스크린샷 1~5장 16:9 준비
-- [ ] 제출 폼 문구 작성 — `docs/submission_checklist.md` §1 전 항목
+- [ ] 제출 폼 문구 작성 — `docs/submission/submission_checklist.md` §1 전 항목
 - [ ] **제출 버튼(임시저장 아님)** — 팀장 계정, 9/20 마감, 마감 전 수정 가능
 
 ## 12. 심사 기간 운영 — 🔲 9/21~10/5
@@ -90,7 +90,7 @@ Phase D (본선):     TOP20 시 데모데이 발표 준비 (~10/17)
 
 ## 핵심 체크리스트 (항상 열어두기)
 
-- [ ] `docs/submission_checklist.md` — 폼 필수 항목·파일 규격·약관·투표 규칙 전체
+- [ ] `docs/submission/submission_checklist.md` — 폼 필수 항목·파일 규격·약관·투표 규칙 전체
 - [ ] 접수 완료 여부 (9/19 00:00 마감)
 - [ ] 제출 완료 여부 (9/21 00:00 마감, 임시저장 아님)
 - [ ] 서비스 URL 9/21~10/5 접속 유지

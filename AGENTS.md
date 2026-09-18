@@ -6,27 +6,22 @@
 - 제출 마감: **2026-09-20(일)**. 제출물: **배포된 작동 서비스 링크** + 문제 정의/AI 활용 방식/기술 스택.
 - 예선: 내부 심사 80% + 투표 20% (기획력·실현가능성·확장성·AI 활용 적절성) → TOP20 → 10/17 데모데이.
 - 심사 기간(9/21~10/5) 내내 서비스 링크 작동 필수.
-- 상세: `docs/rules.md`, `docs/challenge.md`
+- 상세: `docs/contest/rules.md`, `docs/contest/challenge.md`
 
 ## 산출물 구조
 
 ```
-docs/
-  rules.md              # 룰·배점·일정·심사위원·what wins
-  challenge.md          # 오픈 토픽 해석·리소스 인벤토리
-  research/<company>.md # 심사위원·파트너사 리서치
-  problems.md           # 문제 정의 (Who/Situation/Job/Obstacle/Impact)
-  opportunity_sizing.md # 기회 크기
-  solutions.md          # 솔루션 후보
-  decision.md           # ICE + judging fit 점수표·한 문장 결론
-  measurement.md        # North Star metric
+docs/                   # 루트 = 살아있는 문서 (빌드 중 매일 참조)
   service_design.md     # 채택 솔루션(A) 설계 — 입출력 계약·스코어링·스택·non-goals
+  measurement.md        # North Star metric
   loop.md / loop_setup.md # 루프 정의 / 실행 설계
   process_log.md        # 작업 이력 러너 (제출 수치·발표 과정 출처)
-  submission_checklist.md / submission_draft.md
+  contest/              # 대회 정보 — rules.md · challenge.md · research/<company>.md
+  discovery/            # 발굴 히스토리 (확정됨) — problems · opportunity_sizing · solutions · decision
+  submission/           # 제출 산출물 — submission_checklist.md · submission_draft.md
   context/videos/*.md   # 영상 transcript (있을 경우)
 app/                    # Next.js App Router — 단일 페이지 + /api/decompose + /api/execute
-lib/                    # types.ts(API 계약 SoT) · presets.ts(데모 프리셋 캐시) · llm.ts 등
+lib/                    # types.ts(API 계약 SoT) · presets.ts(데모 프리셋 캐시) · engine.ts(LLM 호출+mock)
 eval_set/cases/<id>/    # 평가셋 — description.txt + sample.* + expected.json (규격: eval_set/README.md)
 eval_runs/<ts>/         # 평가 실행 기록 — raw/ + scores.json/md + triage.md (커밋 대상, 과정 증거)
 scripts/                # eval_run.py · ops_check.sh · loop_context.sh · loop_gate.sh

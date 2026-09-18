@@ -28,4 +28,4 @@
 2. 세션 A → WP1 (eval_set 확충)
 3. 세션 B → WP2 (서비스 구현)
 4. WP2 완료 후: `npm install` → dev 서버 → `/loop-iterate` 빌드 루프 (stop: P0=0·실행 성공률≥90%·분해 적절성≥80%, cap 10회)
-5. 과제 제출(9/21 00:00 마감) 전: WP3 — 배포 + 검증 + 제출 문서 + 스크린샷 (`docs/submission_checklist.md`)
+5. 과제 제출(9/21 00:00 마감) 전: WP3 — 배포 + 검증 + 제출 문서 + 스크린샷 (`docs/submission/submission_checklist.md`)
