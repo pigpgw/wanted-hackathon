@@ -10,11 +10,14 @@ import {
   Copy,
   Download,
   FileText,
+  Link2,
   Loader2,
   Plug,
   RotateCcw,
+  ShieldCheck,
   Upload,
   UserCheck,
+  Wand2,
   Zap,
 } from "lucide-react";
 
@@ -48,6 +51,36 @@ interface SampleFile {
   text: string;
   note: string | null;
   fromPreset: boolean;
+}
+
+// v2 — 레시피 링크: 워크플로 설정을 URL fragment(#r=…)에 인코딩 (서버 저장 없음)
+interface RecipePayload {
+  d: string; // work_description
+  fq?: string;
+  mm?: number;
+  r: DecomposeResult;
+  s: number; // selected step id
+  f?: string; // output_format
+}
+
+function encodeRecipe(p: RecipePayload): string {
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(p))));
+  return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function decodeRecipe(s: string): RecipePayload | null {
+  try {
+    const b64 = s.replace(/-/g, "+").replace(/_/g, "/");
+    const pad = (4 - (b64.length % 4)) % 4;
+    const json = decodeURIComponent(escape(atob(b64 + "=".repeat(pad))));
+    const p = JSON.parse(json) as RecipePayload;
+    if (typeof p?.d !== "string" || !p.r || !Array.isArray(p.r.steps)) {
+      return null;
+    }
+    return p;
+  } catch {
+    return null;
+  }
 }
 
 // 토스 스타일 분류 배지 — flat, 채움형, 작은 텍스트
@@ -209,6 +242,7 @@ export function AutomationApp() {
   const [fileSample, setFileSample] = useState<SampleFile | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [pasteText, setPasteText] = useState("");
+  const [outputFormat, setOutputFormat] = useState(""); // v2 — 결과 양식
 
   // [3] 실행 결과 상태
   const [executed, setExecuted] = useState<ExecuteResult | null>(null);
@@ -216,6 +250,13 @@ export function AutomationApp() {
     useState<ExecutionType | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedArtifact, setCopiedArtifact] = useState(false);
+  const [copiedRecipe, setCopiedRecipe] = useState(false);
+
+  // v2 — 자연어 수정·레시피 복원
+  const [revisionText, setRevisionText] = useState("");
+  const [revising, setRevising] = useState(false);
+  const [reviseError, setReviseError] = useState<string | null>(null);
+  const [recipeRestored, setRecipeRestored] = useState(false);
 
   // 로딩·에러 (§10 — 조용한 크래시 금지, 명시적 표시 + 재시도)
   const [decomposing, setDecomposing] = useState(false);
@@ -231,6 +272,23 @@ export function AutomationApp() {
       .then((r) => (r.ok ? r.json() : []))
       .then((data: PresetSummary[]) => setPresets(data))
       .catch(() => setPresets([]));
+  }, []);
+
+  // v2 — 레시피 링크(#r=…)로 들어오면 워크플로 복원 (데이터만 새로 넣으면 됨)
+  useEffect(() => {
+    const m = /#r=([A-Za-z0-9_-]+)/.exec(window.location.hash);
+    if (!m) return;
+    const p = decodeRecipe(m[1]);
+    if (!p) return;
+    setDescription(p.d);
+    if (p.fq) setFrequency(p.fq);
+    if (typeof p.mm === "number") setManualMinutes(String(p.mm));
+    setDecomposed(p.r);
+    const step = p.r.steps.find((s) => s.id === p.s);
+    if (step) setSelectedStep(step);
+    if (p.f) setOutputFormat(p.f);
+    setRecipeRestored(true);
+    history.replaceState(null, "", window.location.pathname);
   }, []);
 
   useEffect(() => {
@@ -266,6 +324,10 @@ export function AutomationApp() {
     setExecuteError(null);
     setFileSample(null);
     setPasteText("");
+    setOutputFormat("");
+    setRevisionText("");
+    setReviseError(null);
+    setRecipeRestored(false);
   }
 
   async function runDecompose() {
@@ -355,6 +417,9 @@ export function AutomationApp() {
           task_title: decomposed.task_title,
           sample_data: activeSample.text,
           sample_filename: activeSample.name,
+          ...(outputFormat.trim()
+            ? { output_format: outputFormat.trim() }
+            : {}),
         }),
       });
       const data = await res.json();
@@ -370,6 +435,68 @@ export function AutomationApp() {
       setExecuted(null);
     } finally {
       setExecuting(false);
+    }
+  }
+
+  // v2 — 자연어 수정: 결과물 + 지시 → /api/revise → 결과물 교체
+  async function runRevise() {
+    if (!executed || !revisionText.trim()) return;
+    setRevising(true);
+    setReviseError(null);
+    try {
+      const res = await fetch("/api/revise", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          result_artifact: executed.result_artifact,
+          instruction: revisionText.trim(),
+          task_title: decomposed?.task_title,
+          ...(outputFormat.trim() ? { output_format: outputFormat.trim() } : {}),
+          ...(activeSample ? { sample_data: activeSample.text } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setReviseError(data?.error ?? "수정에 실패했습니다");
+        return;
+      }
+      const revised = data as {
+        result_artifact: string;
+        verification?: ExecuteResult["verification"];
+      };
+      setExecuted({
+        ...executed,
+        result_artifact: revised.result_artifact,
+        ...(revised.verification
+          ? { verification: revised.verification }
+          : {}),
+      });
+      setRevisionText("");
+    } catch {
+      setReviseError("네트워크 오류 — 다시 시도해 주세요");
+    } finally {
+      setRevising(false);
+    }
+  }
+
+  // v2 — 레시피 링크: 현재 워크플로(서술+분해+선택 단계+양식)를 URL로 인코딩해 복사
+  async function copyRecipeLink() {
+    if (!decomposed || !selectedStep) return;
+    const payload: RecipePayload = {
+      d: description,
+      ...(frequency.trim() ? { fq: frequency.trim() } : {}),
+      ...(manualMinutesNum ? { mm: manualMinutesNum } : {}),
+      r: decomposed,
+      s: selectedStep.id,
+      ...(outputFormat.trim() ? { f: outputFormat.trim() } : {}),
+    };
+    const url = `${window.location.origin}${window.location.pathname}#r=${encodeRecipe(payload)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedRecipe(true);
+      setTimeout(() => setCopiedRecipe(false), 2500);
+    } catch {
+      /* 클립보드 권한 거부 시 무시 */
     }
   }
 
@@ -398,6 +525,10 @@ export function AutomationApp() {
     setExecutedStepType(null);
     setDecomposeError(null);
     setExecuteError(null);
+    setOutputFormat("");
+    setRevisionText("");
+    setReviseError(null);
+    setRecipeRestored(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -605,6 +736,12 @@ export function AutomationApp() {
         {decomposed && (
           <div ref={stepsRef} className="mt-4 scroll-mt-4 sm:mt-6">
             <Section>
+              {recipeRestored && (
+                <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#e8f3ff] px-4 py-3 text-sm font-medium text-[#1b64da]">
+                  <Link2 className="size-4 shrink-0" />
+                  저장된 레시피를 불러왔습니다 — 새 데이터만 넣고 실행하세요.
+                </div>
+              )}
               <h2 className="text-lg font-bold sm:text-xl">
                 {decomposed.task_title}
               </h2>
@@ -706,6 +843,22 @@ export function AutomationApp() {
                         placeholder="또는 여기에 샘플 데이터를 직접 붙여넣으세요 (CSV 행, 텍스트 등)"
                         className="min-h-[80px] bg-background text-xs"
                       />
+                      <div className="space-y-1.5">
+                        <Label
+                          htmlFor="output-format"
+                          className="text-xs font-medium text-muted-foreground"
+                        >
+                          결과 양식 (선택) — 우리 팀 보고서 포맷을 붙여넣으면
+                          그대로 채웁니다
+                        </Label>
+                        <Textarea
+                          id="output-format"
+                          value={outputFormat}
+                          onChange={(e) => setOutputFormat(e.target.value)}
+                          placeholder={"예: | 항목 | 값 | 비고 |\n|---|---|---|\n| 총 매출 | | |\n| 전주 대비 | | |"}
+                          className="min-h-[70px] bg-background font-mono text-xs"
+                        />
+                      </div>
                       {activeSample?.note && (
                         <p className="text-xs text-[#c26a00]">
                           {activeSample.note} — 샘플 기준 실행 결과가
@@ -857,6 +1010,87 @@ export function AutomationApp() {
                 </ReactMarkdown>
               </div>
 
+              {/* v2 — 검증 카드: 결과물 속 수치·사실을 샘플 데이터와 대조 */}
+              {executed.verification && executed.verification.items.length > 0 && (
+                <div className="mt-6 rounded-2xl border border-[#d6e8ff] bg-[#f5f9ff] p-5">
+                  <h3 className="flex items-center gap-1.5 text-[15px] font-bold text-[#1b64da]">
+                    <ShieldCheck className="size-4" />
+                    검증 카드
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {executed.verification.summary}
+                  </p>
+                  <ul className="mt-3 space-y-2.5">
+                    {executed.verification.items.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm">
+                        <span
+                          className={cn(
+                            "mt-0.5 flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-[11px] font-bold",
+                            item.status === "ok"
+                              ? "bg-[#e3f9e9] text-[#00a661]"
+                              : "bg-[#fff3e0] text-[#c26a00]"
+                          )}
+                        >
+                          {item.status === "ok" ? "일치" : "확인"}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="font-medium leading-relaxed">
+                            {item.claim}
+                          </p>
+                          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                            근거: {item.basis}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* v2 — 자연어 수정 */}
+              <div className="mt-6 rounded-2xl bg-secondary p-5">
+                <h3 className="flex items-center gap-1.5 text-[15px] font-bold">
+                  <Wand2 className="size-4 text-primary" />
+                  자연어로 수정
+                </h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  결과물을 바꾸고 싶은 대로 말해주세요 — 데이터에 없는 수치는
+                  지어내지 않습니다.
+                </p>
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    value={revisionText}
+                    onChange={(e) => setRevisionText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") runRevise();
+                    }}
+                    placeholder="예: 전주 대비 행 빼고, 표 아래 한 줄 요약 추가해줘"
+                    className="bg-background"
+                    disabled={revising}
+                  />
+                  <Button
+                    onClick={runRevise}
+                    disabled={!revisionText.trim() || revising}
+                    className="shrink-0"
+                  >
+                    {revising ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        수정 중…
+                      </>
+                    ) : (
+                      "수정 적용"
+                    )}
+                  </Button>
+                </div>
+                {reviseError && (
+                  <p className="mt-2 flex items-center gap-1.5 text-sm text-destructive">
+                    <AlertTriangle className="size-4" />
+                    {reviseError}
+                  </p>
+                )}
+              </div>
+
               <div className="mt-6 rounded-2xl bg-secondary p-5">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <h3 className="text-[15px] font-bold">
@@ -904,6 +1138,35 @@ export function AutomationApp() {
                   </ul>
                 </div>
               )}
+
+              {/* v2 — 레시피 링크: 다음 주엔 데이터만 교체 */}
+              <div className="mt-6 rounded-2xl border border-border p-5">
+                <h3 className="flex items-center gap-1.5 text-[15px] font-bold">
+                  <Link2 className="size-4 text-primary" />
+                  다음 주엔 데이터만 바꾸세요
+                </h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  이 링크를 저장해두면 업무 서술·분해·선택 단계·양식이 그대로
+                  불려옵니다 — 다음 주엔 새 데이터만 넣고 바로 실행.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={copyRecipeLink}
+                  className="mt-3 w-full gap-1.5 sm:w-auto"
+                >
+                  {copiedRecipe ? (
+                    <>
+                      <Check className="size-4 text-[#00a661]" />
+                      레시피 링크 복사됨
+                    </>
+                  ) : (
+                    <>
+                      <Link2 className="size-4" />
+                      레시피 링크 복사
+                    </>
+                  )}
+                </Button>
+              </div>
 
               <Button
                 variant="secondary"

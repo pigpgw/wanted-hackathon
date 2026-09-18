@@ -72,7 +72,8 @@
             "rationale": "...", "execution_type": "executable" },
   "task_title": "주간 매출 보고서 작성",
   "sample_data": "date,channel,product,amount\n...",
-  "sample_filename": "sales_week.csv"
+  "sample_filename": "sales_week.csv",
+  "output_format": "| 항목 | 값 | 비고 |..."  // 선택 — 사용자 팀 양식. 있으면 그 구조로 채우고 프리셋 캐시 우회
 }
 ```
 → 출력 `ExecuteResult`:
@@ -84,9 +85,25 @@
   "manual_minutes_est": 40,
   "prompt_pack": "매주 재사용 가능한 프롬프트+SOP 텍스트",
   "caveats": ["샘플 50행 기준 실행 — 실데이터는 검토 필요"],
-  "cached": true  // 선택 — 프리셋 사전 실측 결과를 그대로 반환한 경우만
+  "cached": true,  // 선택 — 프리셋 사전 실측 결과를 그대로 반환한 경우만
+  "verification": {  // 선택 — 검증 카드. CSV면 lib/verify.ts 코드 재계산 결과, 아니면 LLM 생성 카드
+    "items": [{"claim": "1,886,000", "basis": "재계산 일치 — amount 전체 합계", "status": "ok"}],
+    "summary": "결과물 속 수치 5건을 코드로 재계산 — 5건 일치"
+  }
 }
 ```
+
+`POST /api/revise` — 입력 `ReviseInput` (v2 자연어 수정):
+```json
+{
+  "result_artifact": "현재 결과물 마크다운",
+  "instruction": "총 매출을 1,886,000으로 고쳐줘",
+  "task_title": "주간 매출 보고서 작성",
+  "output_format": "...",  // 선택 — 양식 유지
+  "sample_data": "..."     // 선택 — 있으면 수정본에 코드 재계산 재검증
+}
+```
+→ 출력 `ReviseResult`: `{ "result_artifact": "...", "verification": {...} }`
 
 ## 5. 실행 엔진 결정: LLM-as-executor
 

@@ -76,6 +76,14 @@ export async function POST(req: Request) {
       { status: 413 }
     );
   }
+  const output_format =
+    typeof input.output_format === "string" ? input.output_format : undefined;
+  if (output_format && Buffer.byteLength(output_format, "utf8") > MAX_SAMPLE_BYTES) {
+    return NextResponse.json(
+      { error: "output_format은 500KB를 초과할 수 없습니다" },
+      { status: 413 }
+    );
+  }
 
   const normalized: ExecuteInput = {
     step,
@@ -84,15 +92,19 @@ export async function POST(req: Request) {
     ...(typeof input.sample_filename === "string" && input.sample_filename
       ? { sample_filename: input.sample_filename }
       : {}),
+    ...(output_format?.trim() ? { output_format } : {}),
   };
 
   // 프리셋 캐시 — task_title·step.id·sample_data 모두 일치할 때만 (다른 데이터에 통조림 결과 반환 방지)
-  const preset = presets.find(
-    (p) =>
-      p.decompose.task_title === normalized.task_title &&
-      p.sample_data === normalized.sample_data &&
-      p.execute[normalized.step.id] !== undefined
-  );
+  // output_format이 있으면 기본 양식 캐시와 결과가 달라지므로 캐시 우회
+  const preset = output_format?.trim()
+    ? undefined
+    : presets.find(
+        (p) =>
+          p.decompose.task_title === normalized.task_title &&
+          p.sample_data === normalized.sample_data &&
+          p.execute[normalized.step.id] !== undefined
+      );
   if (preset) {
     return NextResponse.json({ ...preset.execute[normalized.step.id], cached: true });
   }

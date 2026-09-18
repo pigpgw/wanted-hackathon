@@ -40,3 +40,11 @@
   - 제거: `hackathon_builder_workflow.md`, `docs/loop.md`, `docs/loop_setup.md`, `.devin/`(hooks·loop-iterate 스킬), `.agents/skills/work-hack-eval`, `scripts/loop_context.sh`·`loop_gate.sh`(macOS 전용 `stat -f` — Linux에서 동작 안 함), `docs/contest/challenge.md`, `docs/contest/research/*`, `docs/discovery/opportunity_sizing.md`·`solutions.md`.
   - 이유: 마감 2일 전 — 리포를 열어본 심사위원·다음 세션이 제품·근거·다음 행동만 바로 찾게. 결정 근거는 `docs/discovery/problems.md`·`decision.md`에 요약으로 남아 있고, 루프 기록은 이 파일과 `docs/process_log.md`에 보존. 삭제 원문은 git 히스토리(`e725053` 이전)에서 복구 가능.
   - 유지: `eval_set/`, `scripts/eval_run.py`, `scripts/ops_check.sh` — 실측 수치의 재현 수단.
+- **토스 디자인 시스템으로 전면 리디자인 + 모바일 대응** (2026-09-19, 사용자 지시)
+  - 토스 블루(#3182F6)·그레이(#F2F4F6) 토큰, 플랫 카드·채움 배지·그레이 채움 입력, 그라데이션/dot-grid 제거. `automation-app.tsx` 재작성 + 모바일 반응형(풀폭 CTA·flex-wrap 스탯).
+- **v2 "재작업 제거" 4종 구현 — 양식 채움·코드 검증 카드·자연어 수정·레시피 링크** (2026-09-19, 사용자 기획 승인)
+  - 배경 수치: AI 써도 시간이 안 주는 이유 = ①회사 양식 재작업 ②숫자 재검증 주 4.5h ③매주 프롬프트 재작성.
+  - `output_format`(선택): 사용자 양식 붙여넣기 → LLM이 그 구조로 채움. 양식 있으면 프리셋 캐시 우회(기본 양식 통조림 반환 방지).
+  - **검증 카드는 LLM 자기 검증이 아니라 코드 재계산** (`lib/verify.ts`): 실측에서 gpt-4o-mini가 합계를 1,686,000(실제 1,886,000)으로 틀리고 자기 검증에선 "3건 일치"로 거짓 승인 — LLM 검증은 순환 논리라 폐기하고, 샘플 데이터의 그룹 집계를 코드로 계산해 결과물 수치와 대조. 불일치 시 재계산값을 근거로 "확인 필요" 표시. CSV 아니면 LLM 카드로 폴백.
+  - `/api/revise`: 자연어 수정 → 수정본 전체 재출력. `sample_data` 동봉 시 수정본에 코드 재검증 재수행 → "지적→수정→재검증 일치" 루프.
+  - **레시피 링크는 DB 없이 URL `#r=` fragment 인코딩**: 서술+분해 결과+선택 단계+양식을 base64url로 URL에 실음 — stateless/non-goals 유지, "다음 주엔 데이터만" 요구 충족.
