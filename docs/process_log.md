@@ -24,3 +24,4 @@
 | 2026-09-18 | EVAL | iter3 (분해 프롬프트 정직화): 분류일치 9→10·exec 100% 유지. 09·11 정직화, 07 과보수 회귀 | `eval_runs/2026-09-18T213419/` |
 | 2026-09-18 | EVAL | iter4 (산출물 유형 기준): 07 회복·분류일치 10/13 수렴. **동결 후보** — 잔여 3건은 metric 한계·논쟁 케이스, raw상 추천은 정직 | `eval_runs/2026-09-18T214048/` |
 | 2026-09-19 | BUILD | 해커톤 경쟁력 패스 — 디자인(Pretendard·인디오/퍼플·히어로) + 기능(붙여넣기·연간 절감·복사/다운로드·OG/favicon) + 제출 초안 실측 수치 반영 | `app/globals.css`, `app/layout.tsx`, `app/icon.svg`, `components/automation-app.tsx`, `docs/submission/submission_draft.md` — build·ops_check 통과 |
+| 2026-09-19 | DEPLOY | Vercel 프로덕션 배포 — https://wanted-hackathon.vercel.app/ · ops_check 200·canonical ok · 프리셋 분해→실행 전 경로 검증 (실행 28초) | `scripts/ops_check.sh` 출력, 프로덕션 curl 검증 |
