@@ -1,6 +1,7 @@
 node_modules/
 .next/
 out/
+eval_runs/
 .env
 .env.*
 !.env.example
