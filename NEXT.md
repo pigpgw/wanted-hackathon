@@ -6,6 +6,7 @@
 
 ## 다음 행동
 
-1. 서비스 구현 시작 — 스택 결정 (정적 프론트 + 서버리스 API + LLM). 핵심 플로우 1개: 서술 입력 → 분해 맵 → 1개 선택 → 샘플 실행 → 결과물+before/after.
-2. eval_set 구축 — 반복 업무 서술 10~20개 + 샘플 데이터 + 기대 단계·자동화 판정 태그.
-3. 과제 제출(9/21 00:00 마감) 전: 배포 + 핵심 플로우 검증 + 제출 문서(문제 정의/AI 활용/기술 스택) + 스크린샷 1~5장 — `docs/submission_checklist.md`.
+1. **사용자**: Upstage Solar API 키 발급 (api.upstage.ai 가입 → 콘솔에서 키) — 없으면 OpenAI/Claude 키 (호환 설계라 무엇이든 됨)
+2. 스캐폴드 — Next.js 단일 페이지 + `/api/decompose` + `/api/execute` (`docs/service_design.md` §8 스펙대로)
+3. eval_set 구축 — 서술 12~15개 + 샘플 데이터 + 기대 태그 (`service_design.md` §12)
+4. 과제 제출(9/21 00:00 마감) 전: 배포 + 검증 + 제출 문서 + 스크린샷 — `docs/submission_checklist.md`
