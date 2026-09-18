@@ -6,6 +6,7 @@
 - **WP1·WP2 완료** (2026-09-18): eval_set 13케이스 확충 + Next.js 서비스 구현(3단계 UI·API 3개·Tailwind+shadcn·프리셋 캐시/재시도/폴백). `npm run build` 통과, 로컬 계약 curl 검증 완료.
 - 오케스트레이터 검수 수정: `/api/execute` 프리셋 캐시에 `sample_data` 일치 조건 추가 (다른 데이터에 통조림 결과 반환 방지).
 - iter 카운터: **4/10 — 동결 후보** (stop: P0=0 ✅·exec 100% ✅·분해 적절성은 인간 채점 대상)
+- **해커톤 경쟁력 패스 완료** (2026-09-19): 디자인 업그레이드(Pretendard·인디고/퍼플·dot-grid·히어로 "조언이 아니라, 실행.") + 기능 보완(샘플 붙여넣기 입력·연간 절감 환산·결과 복사/.md 다운로드·OG 메타·favicon) + `submission_draft.md` 실측 수치·차별점 반영. `npm run build`·`ops_check.sh` 통과.
   - iter1 (3.5-flash): exec 81.8%·P0 2 — 전부 429. 라우트 재시도 → retryDelay 적응 대기.
   - iter2 (3.1-flash-lite로 교체 — 3.5 포화): exec 100%·P0 0·decompose 13/13.
   - iter3 (분해 프롬프트 정직화): 분류일치 9→10. 09·11 정직해짐, 07 과보수 회귀.
@@ -48,7 +49,6 @@
 
 ## 다음 행동
 
-1. **사용자**: LLM API 키 발급 (Upstage Solar 우선 — api.upstage.ai, 없으면 OpenAI/Claude 키) → `.env` 설정. 키 없어도 프리셋 폴백으로 개발·데모 가능.
-2. 키 설정 후 `/loop-iterate` — iter1부터 실측 (분해 적절성·실행 성공률·P0, cap 10회). 경계 케이스 09~12의 정직한 분류가 최대 관심 대상.
-3. **주의**: 이 머신 `:3000`은 다른 프로젝트의 next-server(v16)가 점유 중 — 로컬 eval은 `PORT=3001` 등으로 띄우고 `--base-url` 지정할 것.
-4. WP3: Vercel 배포 → `ops_check.sh` → 스크린샷 → 제출 (`docs/submission/submission_checklist.md`, 마감 9/21 00:00)
+1. **사용자**: 프로덕션 LLM 키 확정 — 사용자가 교체 예정이라고 선언 (현재 `.env`는 `gemini-3.1-flash-lite`, 무료 티어 20 RPM → 투표 기간 트래픽엔 유료/별도 키 권장).
+2. **주의**: 이 머신 `:3000`은 다른 프로젝트의 next-server(v16)가 점유 중 — 로컬 실행은 `PORT=3001`.
+3. WP3: Vercel 배포 (`LLM_API_KEY`·`LLM_BASE_URL`·`LLM_MODEL` env 등록) → `ops_check.sh <url>` → 스크린샷 4장 촬영 → 제출 (`docs/submission/submission_checklist.md`, 마감 9/21 00:00).

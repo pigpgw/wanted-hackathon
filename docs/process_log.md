@@ -31,3 +31,4 @@
 - DEPLOY: 배포 URL, 배포 시각, 검증 결과
 - SUBMIT: 제출 완료 시각, 제출 항목 최종본
 - OPS(9/21~10/5): 매일 생존 확인 결과
+| 2026-09-19 | BUILD | 해커톤 경쟁력 패스 — 디자인(Pretendard·인디오/퍼플·히어로) + 기능(붙여넣기·연간 절감·복사/다운로드·OG/favicon) + 제출 초안 실측 수치 반영 | `app/globals.css`, `app/layout.tsx`, `app/icon.svg`, `components/automation-app.tsx`, `docs/submission/submission_draft.md` — build·ops_check 통과 |
