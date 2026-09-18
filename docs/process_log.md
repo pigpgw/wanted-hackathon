@@ -16,6 +16,9 @@
 | 2026-09-18 | DESIGN | 제출 문서 초안 4항목 + 이 로그 파일 생성 | `docs/submission/submission_draft.md` |
 | 2026-09-18 | BUILD | 루프 인프라 + 스캐폴드 기초 — hooks·scripts·loop-iterate 스킬·`lib/types.ts`·`lib/presets.ts`(프리셋 3종 캐시)·eval_set 1케이스 | `.devin/`, `scripts/`, `lib/`, `eval_set/` |
 | 2026-09-18 | BUILD | 리포 검수·정리 — API 계약 SoT 통일(eval_run.py↔types.ts), 프리셋 산수 오류 정정, stale S2a 제거, WP1~3 작업 패키지 정의 | `AGENTS.md`, `NEXT.md`, `DECISIONS.md` |
+| 2026-09-18 | BUILD | WP1 eval_set 확충 — 13케이스(정리·보고·변환 8 + 경계 5), 구조·expected.json 검증 통과, 프리셋과 불중복 | `eval_set/cases/` |
+| 2026-09-18 | BUILD | WP2 서비스 구현 — app/(3단계 UI + /api/decompose·execute·presets), Tailwind+shadcn, 프리셋 캐시·재시도·폴백. build 통과 + curl 계약 검증 | `app/`, `components/` — 오케스트레이터 검수로 execute 캐시 sample_data 일치 조건 추가 |
+| 2026-09-18 | EVAL | iter0 스모크 (mock 모드, 키 미설정): decompose 13/13·exec 13/13·P0 0·분류일치 9/13 — 파이프라인 검증용, 품질 수치 아님 | `eval_runs/2026-09-18T180855/` |
 
 ## 앞으로 기록할 것 (빌드 단계부터)
 

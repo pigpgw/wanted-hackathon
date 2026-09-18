@@ -3,17 +3,17 @@
 ## 지금 진행 중
 
 - **Phase B — 빌드 단계.** 솔루션: A "업무→실행 자동화기" (`docs/service_design.md`).
-- 리포 검수·정리 완료 (2026-09-18): API 계약 통일(`lib/types.ts`+§4+`eval_run.py`), 프리셋 데모 산수 오류 수정, stale S2a 제거, 문서 기준·소유권 규칙 정리 (`AGENTS.md`).
-- 스캐폴드 부분 완료: `package.json`·configs·`lib/types.ts`·`lib/presets.ts`·`lib/engine.ts`(LLM 호출+mock 폴백) 존재. `app/`·`node_modules` 없음.
-- iter 카운터: 0/10.
+- **WP1·WP2 완료** (2026-09-18): eval_set 13케이스 확충 + Next.js 서비스 구현(3단계 UI·API 3개·Tailwind+shadcn·프리셋 캐시/재시도/폴백). `npm run build` 통과, 로컬 계약 curl 검증 완료.
+- 오케스트레이터 검수 수정: `/api/execute` 프리셋 캐시에 `sample_data` 일치 조건 추가 (다른 데이터에 통조림 결과 반환 방지).
+- iter 카운터: **0/10** — iter0 스모크는 mock 모드 파이프라인 검증일 뿐 (eval_run.py 실행·산출 정상 확인). 품질 수치는 `LLM_API_KEY` 설정 후 iter1부터.
 
 ## 작업 패키지 (병렬 세션 배정용)
 
-| WP | 범위 | 소유 파일 | 완료 조건 |
-|---|---|---|---|
-| WP1 eval_set | 케이스 1→13개 (정리·보고·변환 8 + 경계 5) | `eval_set/**` 만 | `eval_set/README.md` 규격 충족 · `lib/presets.ts` 서술과 불중복 · 가짜 데이터만 |
-| WP2 service | Next.js 앱 + API 라우트 2개 (engine.ts는 구현됨 — 라우트에서 프리셋 조회+재시도·폴백 연결 필요) | `app/**`, `lib/engine.ts`, `.env*`, `package.json`, `package-lock.json` | `npm run build` 통과 + 프리셋 3개로 전체 플로우 로컬 동작 |
-| WP3 배포·제출 | Vercel 배포 + 검증 + 스크린샷 + 제출 폼 | 오케스트레이터 담당 | `ops_check.sh` 통과 + 제출 완료 |
+| WP | 범위 | 소유 파일 | 완료 조건 | 상태 |
+|---|---|---|---|---|
+| WP1 eval_set | 케이스 1→13개 (정리·보고·변환 8 + 경계 5) | `eval_set/**` 만 | `eval_set/README.md` 규격 충족 · `lib/presets.ts` 서술과 불중복 · 가짜 데이터만 | ✅ 완료 |
+| WP2 service | Next.js 앱 + API 라우트 (engine.ts는 구현됨 — 라우트에서 프리셋 조회+재시도·폴백 연결) | `app/**`, `components/**`, `lib/engine.ts`, `lib/utils.ts`, `.env*`, `package.json`, `package-lock.json` | `npm run build` 통과 + 프리셋 3개로 전체 플로우 로컬 동작 | ✅ 완료 |
+| WP3 배포·제출 | Vercel 배포 + 검증 + 스크린샷 + 제출 폼 | 오케스트레이터 담당 | `ops_check.sh` 통과 + 제출 완료 | 대기 |
 
 ### 공통 규칙
 
@@ -38,13 +38,12 @@
 ### 세션 레지스트리
 | WP | session id | 모드 | 상태 | 메모 |
 |---|---|---|---|---|
-| WP1 eval_set | (미배정) | | | |
-| WP2 service | (미배정) | | | |
+| WP1 eval_set | subagent f4546284 (메인 세션 내) | background subagent | **완료·검수 통과** | 13개 케이스 (normal 8 + boundary 5). 오케스트레이터 독립 검증 통과 — 커밋 대기 |
+| WP2 service | subagent 4771d11b | 메인 세션 subagent | ✅ 완료·검수 통과 | build·curl 계약 검증. execute 캐시에 sample_data 일치 조건 추가 (오케스트레이터 수정) |
 
 ## 다음 행동
 
 1. **사용자**: LLM API 키 발급 (Upstage Solar 우선 — api.upstage.ai, 없으면 OpenAI/Claude 키) → `.env` 설정. 키 없어도 프리셋 폴백으로 개발·데모 가능.
-2. WP1 워커 기동 → 새 탭 `devin` 대화형 + 시작 지시 (위 프로토콜). session id는 오케스트레이터가 레지스트리에 기록
-3. WP2 → 이 세션에서 subagent로 처리 권장 (lock·권한 문제 없음). 별도 탭으로 둘 경우 동일 절차
-4. WP2 완료 후: `npm install` → dev 서버 → `/loop-iterate` 빌드 루프 (stop: P0=0·실행 성공률≥90%·분해 적절성≥80%, cap 10회)
-5. 과제 제출(9/21 00:00 마감) 전: WP3 — 배포 + 검증 + 제출 문서 + 스크린샷 (`docs/submission/submission_checklist.md`)
+2. 키 설정 후 `/loop-iterate` — iter1부터 실측 (분해 적절성·실행 성공률·P0, cap 10회). 경계 케이스 09~12의 정직한 분류가 최대 관심 대상.
+3. **주의**: 이 머신 `:3000`은 다른 프로젝트의 next-server(v16)가 점유 중 — 로컬 eval은 `PORT=3001` 등으로 띄우고 `--base-url` 지정할 것.
+4. WP3: Vercel 배포 → `ops_check.sh` → 스크린샷 → 제출 (`docs/submission/submission_checklist.md`, 마감 9/21 00:00)
