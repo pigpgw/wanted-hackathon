@@ -3,54 +3,55 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* 토스 디자인 시스템 기반 토큰 — flat·큰 여백·블루 포인트 */
 :root {
-  --background: oklch(0.99 0.003 260);
-  --foreground: oklch(0.19 0.03 270);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.19 0.03 270);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.19 0.03 270);
-  --primary: oklch(0.51 0.22 275);
-  --primary-foreground: oklch(0.98 0.005 275);
-  --secondary: oklch(0.955 0.01 275);
-  --secondary-foreground: oklch(0.3 0.08 275);
-  --muted: oklch(0.965 0.008 270);
-  --muted-foreground: oklch(0.5 0.03 270);
-  --accent: oklch(0.94 0.03 275);
-  --accent-foreground: oklch(0.35 0.1 275);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.91 0.01 270);
-  --input: oklch(0.91 0.01 270);
-  --ring: oklch(0.51 0.22 275);
-  --radius: 0.75rem;
+  --background: #ffffff;
+  --foreground: #191f28;
+  --card: #ffffff;
+  --card-foreground: #191f28;
+  --popover: #ffffff;
+  --popover-foreground: #191f28;
+  --primary: #3182f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f2f4f6;
+  --secondary-foreground: #4e5968;
+  --muted: #f2f4f6;
+  --muted-foreground: #8b95a1;
+  --accent: #e8f3ff;
+  --accent-foreground: #1b64da;
+  --destructive: #f04452;
+  --destructive-foreground: #ffffff;
+  --border: #e5e8eb;
+  --input: #e5e8eb;
+  --ring: #3182f6;
+  --radius: 1rem;
 }
 
 .dark {
-  --background: oklch(0.16 0.02 270);
-  --foreground: oklch(0.96 0.005 275);
-  --card: oklch(0.2 0.025 270);
-  --card-foreground: oklch(0.96 0.005 275);
-  --popover: oklch(0.2 0.025 270);
-  --popover-foreground: oklch(0.96 0.005 275);
-  --primary: oklch(0.7 0.18 275);
-  --primary-foreground: oklch(0.19 0.03 270);
-  --secondary: oklch(0.27 0.03 270);
-  --secondary-foreground: oklch(0.96 0.005 275);
-  --muted: oklch(0.27 0.03 270);
-  --muted-foreground: oklch(0.68 0.03 270);
-  --accent: oklch(0.28 0.04 275);
-  --accent-foreground: oklch(0.96 0.005 275);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.65 0.15 275);
+  --background: #17171c;
+  --foreground: #f2f4f6;
+  --card: #1e1e23;
+  --card-foreground: #f2f4f6;
+  --popover: #1e1e23;
+  --popover-foreground: #f2f4f6;
+  --primary: #3182f6;
+  --primary-foreground: #ffffff;
+  --secondary: #2c2c35;
+  --secondary-foreground: #b0b8c1;
+  --muted: #2c2c35;
+  --muted-foreground: #8b95a1;
+  --accent: #233a5c;
+  --accent-foreground: #7fb3fa;
+  --destructive: #f04452;
+  --destructive-foreground: #ffffff;
+  --border: #2c2c35;
+  --input: #2c2c35;
+  --ring: #3182f6;
 }
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
@@ -84,26 +85,5 @@
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     letter-spacing: -0.01em;
-  }
-}
-
-@layer utilities {
-  .bg-dot-grid {
-    background-image: radial-gradient(
-      circle,
-      oklch(0.51 0.22 275 / 0.14) 1px,
-      transparent 1px
-    );
-    background-size: 22px 22px;
-  }
-  .text-gradient-primary {
-    background: linear-gradient(
-      120deg,
-      oklch(0.51 0.22 275),
-      oklch(0.62 0.2 300)
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
   }
 }

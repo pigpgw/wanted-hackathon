@@ -6,27 +6,19 @@ import remarkGfm from "remark-gfm";
 import {
   AlertTriangle,
   Check,
+  ChevronRight,
   Copy,
   Download,
   FileText,
   Loader2,
   Plug,
   RotateCcw,
-  Sparkles,
   Upload,
   UserCheck,
   Zap,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,23 +50,24 @@ interface SampleFile {
   fromPreset: boolean;
 }
 
+// 토스 스타일 분류 배지 — flat, 채움형, 작은 텍스트
 const TYPE_META: Record<
   ExecutionType,
-  { label: string; className: string; icon: typeof Zap }
+  { label: string; badgeClass: string; icon: typeof Zap }
 > = {
   executable: {
-    label: "실행 가능",
-    className: "border-emerald-300 bg-emerald-50 text-emerald-700",
+    label: "즉시 실행",
+    badgeClass: "bg-[#e8f3ff] text-[#1b64da]",
     icon: Zap,
   },
   integration_needed: {
     label: "연동 필요",
-    className: "border-amber-300 bg-amber-50 text-amber-700",
+    badgeClass: "bg-[#fff3e0] text-[#c26a00]",
     icon: Plug,
   },
   human_judgment: {
     label: "사람 판단",
-    className: "border-slate-300 bg-slate-100 text-slate-600",
+    badgeClass: "bg-secondary text-secondary-foreground",
     icon: UserCheck,
   },
 };
@@ -82,48 +75,51 @@ const TYPE_META: Record<
 // 결과물 마크다운 — 표 스타일링 필수 (remark-gfm)
 const mdComponents: Components = {
   h2: (props) => (
-    <h2 className="mt-6 mb-2 text-lg font-bold first:mt-0" {...props} />
+    <h2 className="mt-7 mb-2 text-lg font-bold first:mt-0" {...props} />
   ),
   h3: (props) => (
-    <h3 className="mt-5 mb-1.5 text-base font-semibold" {...props} />
+    <h3 className="mt-5 mb-1.5 text-base font-bold" {...props} />
   ),
   h4: (props) => (
     <h4 className="mt-4 mb-1 text-sm font-semibold" {...props} />
   ),
-  p: (props) => <p className="my-2 leading-relaxed" {...props} />,
+  p: (props) => <p className="my-2.5 leading-[1.7]" {...props} />,
   ul: (props) => <ul className="my-2 list-disc space-y-1 pl-5" {...props} />,
   ol: (props) => <ol className="my-2 list-decimal space-y-1 pl-5" {...props} />,
   li: (props) => <li className="leading-relaxed" {...props} />,
   table: (props) => (
-    <div className="my-3 overflow-x-auto rounded-md border">
+    <div className="my-3 overflow-x-auto rounded-xl border">
       <table className="w-full border-collapse text-sm" {...props} />
     </div>
   ),
-  thead: (props) => <thead className="bg-muted" {...props} />,
+  thead: (props) => <thead className="bg-secondary" {...props} />,
   th: (props) => (
     <th
-      className="border-b px-3 py-2 text-left font-semibold whitespace-nowrap"
+      className="border-b px-3 py-2.5 text-left font-semibold whitespace-nowrap"
       {...props}
     />
   ),
   td: (props) => (
-    <td className="border-b px-3 py-2 align-top last:[tr:last-child_&]:border-0" {...props} />
+    <td
+      className="border-b px-3 py-2.5 align-top last:[tr:last-child_&]:border-0"
+      {...props}
+    />
   ),
   code: (props) => (
     <code
-      className="rounded bg-muted px-1 py-0.5 font-mono text-[0.85em]"
+      className="rounded bg-secondary px-1 py-0.5 font-mono text-[0.85em]"
       {...props}
     />
   ),
   pre: (props) => (
     <pre
-      className="my-3 overflow-x-auto rounded-md bg-muted p-3 text-sm"
+      className="my-3 overflow-x-auto rounded-xl bg-secondary p-3 text-sm"
       {...props}
     />
   ),
   blockquote: (props) => (
     <blockquote
-      className="my-3 border-l-4 border-muted-foreground/30 pl-3 text-muted-foreground"
+      className="my-3 border-l-[3px] border-muted-foreground/30 pl-3 text-muted-foreground"
       {...props}
     />
   ),
@@ -140,7 +136,7 @@ function ScoreDots({ score }: { score: number }) {
         <span
           key={i}
           className={cn(
-            "size-2.5 rounded-full",
+            "size-2 rounded-full",
             i < score ? "bg-primary" : "bg-muted-foreground/20"
           )}
         />
@@ -160,22 +156,42 @@ function ErrorBox({
   retrying: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+    <div className="flex items-center justify-between gap-3 rounded-xl bg-[#fff0f1] px-4 py-3 text-sm text-destructive">
       <span className="flex items-center gap-2">
         <AlertTriangle className="size-4 shrink-0" />
         {message}
       </span>
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
         onClick={onRetry}
         disabled={retrying}
-        className="shrink-0"
+        className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
       >
         {retrying ? <Loader2 className="animate-spin" /> : null}
         재시도
       </Button>
     </div>
+  );
+}
+
+// 토스 스타일 섹션 — 흰 카드, 보더 없이 큰 라운드
+function Section({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section
+      className={cn(
+        "rounded-2xl bg-card p-5 sm:p-7",
+        className
+      )}
+    >
+      {children}
+    </section>
   );
 }
 
@@ -433,235 +449,238 @@ export function AutomationApp() {
       ? Math.round((executed.manual_minutes_est * timesPerYear) / 60)
       : null;
 
+  const STAGES = ["업무 서술", "분해·선택", "실행·결과"];
+
   return (
-    <div className="min-h-screen bg-dot-grid">
-      <div className="mx-auto w-full max-w-3xl px-4 pb-16 pt-12">
-        <header className="mb-10 text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
-            <Sparkles className="size-3.5 text-primary" />
-            업무→실행 자동화기
-          </span>
-          <h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
-            조언이 아니라,{" "}
-            <span className="text-gradient-primary">실행.</span>
+    <div className="min-h-screen bg-[#f9fafb]">
+      <div className="mx-auto w-full max-w-2xl px-4 pb-20 pt-10 sm:px-6 sm:pt-14">
+        {/* ============ 히어로 ============ */}
+        <header className="mb-8 sm:mb-10">
+          <h1 className="text-[28px] font-extrabold leading-[1.25] tracking-tight sm:text-4xl">
+            조언이 아니라,
+            <br />
+            <span className="text-primary">실행.</span>
           </h1>
-          <p className="mx-auto mt-3 max-w-xl leading-relaxed text-muted-foreground">
-            반복 업무를 말로 적으면 AI가 단계로 분해하고, 가장 자동화하기 좋은
-            단계를 골라{" "}
-            <strong className="text-foreground">
-              샘플 데이터로 그 자리에서 한 번 실행
-            </strong>
-            해 결과물을 보여줍니다.
+          <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground sm:text-base">
+            반복 업무를 말로 적으면 AI가 단계로 분해하고, 샘플 데이터로 그
+            자리에서 한 번 실행해 결과물을 보여줍니다.
           </p>
-          {/* 3단계 표시 */}
-          <div className="mt-6 flex items-center justify-center gap-2 text-xs sm:text-sm">
-            {["업무 서술", "분해·단계 선택", "실행·결과"].map((label, i) => (
-              <span key={label} className="flex items-center gap-2">
+          {/* 진행 표시 — 토스 스타일 스텝 */}
+          <div className="mt-5 flex items-center gap-1.5 text-xs sm:text-[13px]">
+            {STAGES.map((label, i) => (
+              <div key={label} className="flex items-center gap-1.5">
                 <span
                   className={cn(
-                    "flex items-center gap-1.5 rounded-full border px-3 py-1 transition-colors",
+                    "flex items-center gap-1.5 font-medium transition-colors",
                     stage === i + 1
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : stage > i + 1
-                        ? "border-primary/40 text-primary"
-                        : "bg-card text-muted-foreground"
+                      ? "text-primary"
+                      : "text-muted-foreground"
                   )}
                 >
                   <span
                     className={cn(
-                      "flex size-4 items-center justify-center rounded-full text-[10px] font-bold",
+                      "flex size-5 items-center justify-center rounded-full text-[10px] font-bold",
                       stage === i + 1
-                        ? "bg-primary-foreground/20"
-                        : "bg-muted"
+                        ? "bg-primary text-primary-foreground"
+                        : stage > i + 1
+                          ? "bg-[#e8f3ff] text-primary"
+                          : "bg-secondary text-muted-foreground"
                     )}
                   >
                     {i + 1}
                   </span>
                   {label}
                 </span>
-                {i < 2 && <span className="text-muted-foreground">→</span>}
-              </span>
+                {i < 2 && (
+                  <ChevronRight className="size-3.5 text-muted-foreground/50" />
+                )}
+              </div>
             ))}
           </div>
         </header>
 
-      {/* ============ [1] 서술 입력 ============ */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <span className="flex size-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-              1
-            </span>
+        {/* ============ [1] 서술 입력 ============ */}
+        <Section>
+          <h2 className="text-lg font-bold sm:text-xl">
             어떤 반복 업무를 자동화하고 싶으세요?
-          </CardTitle>
-          <CardDescription>
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             업무를 말로 적어주세요. 파일 업로드는 3단계에서 합니다.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="예: 매주 월요일 매출 CSV 정리해서 팀장님께 보고서로 올려요"
-            rows={3}
-            maxLength={1000}
-            className="resize-y"
-          />
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="frequency">반복 빈도 (선택)</Label>
-              <Input
-                id="frequency"
-                value={frequency}
-                onChange={(e) => setFrequency(e.target.value)}
-                placeholder="예: 주 1회, 매일"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="manual-minutes">회당 수동 시간(분) (선택)</Label>
-              <Input
-                id="manual-minutes"
-                type="number"
-                min={1}
-                value={manualMinutes}
-                onChange={(e) => setManualMinutes(e.target.value)}
-                placeholder="예: 40"
-              />
-            </div>
-          </div>
+          </p>
 
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">
-              입력할 내용이 없어도 괜찮습니다 — 예시를 눌러 바로 체험하세요.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {presets.map((p) => (
-                <Button
-                  key={p.id}
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => applyPreset(p)}
-                >
-                  <Sparkles className="size-3.5" />
-                  {p.label}
-                </Button>
-              ))}
-            </div>
-            {presetSample && (
-              <p className="flex items-center gap-1.5 text-xs text-emerald-700">
-                <FileText className="size-3.5" />
-                예시 데이터({presetSample.name})가 준비됐습니다 — 3단계에서 바로
-                실행할 수 있습니다.
-              </p>
-            )}
-          </div>
-
-          {decomposeError && (
-            <ErrorBox
-              message={decomposeError}
-              onRetry={runDecompose}
-              retrying={decomposing}
+          <div className="mt-5 space-y-4">
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="예: 매주 월요일 매출 CSV 정리해서 팀장님께 보고서로 올려요"
+              rows={3}
+              maxLength={1000}
+              className="resize-y"
             />
-          )}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="frequency"
+                  className="text-xs font-medium text-muted-foreground"
+                >
+                  반복 빈도 (선택)
+                </Label>
+                <Input
+                  id="frequency"
+                  value={frequency}
+                  onChange={(e) => setFrequency(e.target.value)}
+                  placeholder="예: 주 1회, 매일"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="manual-minutes"
+                  className="text-xs font-medium text-muted-foreground"
+                >
+                  회당 수동 시간(분) (선택)
+                </Label>
+                <Input
+                  id="manual-minutes"
+                  type="number"
+                  min={1}
+                  value={manualMinutes}
+                  onChange={(e) => setManualMinutes(e.target.value)}
+                  placeholder="예: 40"
+                />
+              </div>
+            </div>
 
-          <Button
-            onClick={runDecompose}
-            disabled={!description.trim() || decomposing}
-            className="w-full sm:w-auto"
-          >
-            {decomposing ? (
-              <>
-                <Loader2 className="animate-spin" />
-                업무를 분해하고 있습니다…
-              </>
-            ) : (
-              "업무 분해하기"
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* ============ [2] 분해 결과 ============ */}
-      {decomposed && (
-        <div ref={stepsRef} className="mt-8 scroll-mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="flex size-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                  2
-                </span>
-                {decomposed.task_title}
-              </CardTitle>
-              <CardDescription>
-                {decomposed.steps.length}개 단계로 분해했습니다. 실행할 단계
-                1개를 선택하세요. 수동 소요 시간: 약{" "}
-                {decomposed.manual_minutes_est}분
-                {manualMinutesNum ? "(입력값)" : "(AI 추정)"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {decomposed.steps.map((step) => {
-                const meta = TYPE_META[step.execution_type];
-                const Icon = meta.icon;
-                const selected = selectedStep?.id === step.id;
-                const recommended = step.id === decomposed.recommended_step_id;
-                return (
+            <div className="space-y-2.5">
+              <p className="text-xs text-muted-foreground">
+                입력할 내용이 없어도 괜찮습니다 — 예시를 눌러 바로 체험하세요.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {presets.map((p) => (
                   <button
-                    key={step.id}
+                    key={p.id}
                     type="button"
-                    onClick={() => selectStep(step)}
-                    className={cn(
-                      "w-full rounded-lg border p-4 text-left transition-all",
-                      selected
-                        ? "border-primary bg-primary/5 ring-2 ring-primary/30"
-                        : "hover:border-primary/40 hover:bg-accent/50",
-                      recommended && !selected && "border-primary/40"
-                    )}
+                    onClick={() => applyPreset(p)}
+                    className="rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-[#e5e8eb]"
                   >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs text-muted-foreground">
-                        {step.id}.
-                      </span>
-                      <span className="font-medium">{step.name}</span>
-                      {recommended && (
-                        <Badge className="border-transparent bg-primary text-primary-foreground">
-                          추천
-                        </Badge>
-                      )}
-                      <Badge
-                        variant="outline"
-                        className={cn("gap-1", meta.className)}
-                      >
-                        <Icon className="size-3" />
-                        {meta.label}
-                      </Badge>
-                    </div>
-                    <div className="mt-2 flex items-center gap-3">
-                      <ScoreDots score={step.score} />
-                    </div>
-                    <p className="mt-1.5 text-sm text-muted-foreground">
-                      {step.rationale}
-                    </p>
+                    {p.label}
                   </button>
-                );
-              })}
+                ))}
+              </div>
+              {presetSample && (
+                <p className="flex items-center gap-1.5 text-xs text-[#00a661]">
+                  <FileText className="size-3.5" />
+                  예시 데이터({presetSample.name})가 준비됐습니다 — 3단계에서
+                  바로 실행할 수 있습니다.
+                </p>
+              )}
+            </div>
+
+            {decomposeError && (
+              <ErrorBox
+                message={decomposeError}
+                onRetry={runDecompose}
+                retrying={decomposing}
+              />
+            )}
+
+            <Button
+              onClick={runDecompose}
+              disabled={!description.trim() || decomposing}
+              size="lg"
+              className="w-full"
+            >
+              {decomposing ? (
+                <>
+                  <Loader2 className="animate-spin" />
+                  업무를 분해하고 있습니다…
+                </>
+              ) : (
+                "업무 분해하기"
+              )}
+            </Button>
+          </div>
+        </Section>
+
+        {/* ============ [2] 분해 결과 ============ */}
+        {decomposed && (
+          <div ref={stepsRef} className="mt-4 scroll-mt-4 sm:mt-6">
+            <Section>
+              <h2 className="text-lg font-bold sm:text-xl">
+                {decomposed.task_title}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {decomposed.steps.length}개 단계로 분해했습니다. 실행할 단계
+                1개를 선택하세요 · 수동 소요 약{" "}
+                {decomposed.manual_minutes_est}분
+                {manualMinutesNum ? " (입력값)" : " (AI 추정)"}
+              </p>
+
+              <div className="mt-5 space-y-2.5">
+                {decomposed.steps.map((step) => {
+                  const meta = TYPE_META[step.execution_type];
+                  const Icon = meta.icon;
+                  const selected = selectedStep?.id === step.id;
+                  const recommended = step.id === decomposed.recommended_step_id;
+                  return (
+                    <button
+                      key={step.id}
+                      type="button"
+                      onClick={() => selectStep(step)}
+                      className={cn(
+                        "w-full rounded-2xl border-2 p-4 text-left transition-all sm:p-5",
+                        selected
+                          ? "border-primary bg-[#f5f9ff]"
+                          : "border-transparent bg-secondary hover:bg-[#e9edf2]"
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                          <span className="text-[15px] font-bold sm:text-base">
+                            {step.id}. {step.name}
+                          </span>
+                          {recommended && (
+                            <span className="rounded-md bg-primary px-1.5 py-0.5 text-[11px] font-bold text-primary-foreground">
+                              추천
+                            </span>
+                          )}
+                        </div>
+                        <span
+                          className={cn(
+                            "mt-0.5 flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold",
+                            meta.badgeClass
+                          )}
+                        >
+                          <Icon className="size-3" />
+                          {meta.label}
+                        </span>
+                      </div>
+                      <div className="mt-2">
+                        <ScoreDots score={step.score} />
+                      </div>
+                      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                        {step.rationale}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
 
               {/* 선택된 단계의 실행/안내 패널 */}
               {selectedStep && (
-                <div className="rounded-lg border bg-muted/40 p-4">
+                <div className="mt-4 rounded-2xl bg-[#f5f9ff] p-4 sm:p-5">
                   {selectedStep.execution_type === "executable" ? (
-                    <div className="space-y-3">
-                      <p className="text-sm font-medium">
+                    <div className="space-y-3.5">
+                      <p className="text-[15px] font-bold">
                         「{selectedStep.name}」 단계를 지금 바로 실행합니다.
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm leading-relaxed text-muted-foreground">
                         샘플 파일(CSV/TXT/MD, 500KB 이하)을 업로드하거나 직접
                         붙여넣으세요. 서버에 저장되지 않습니다.
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
                         <Label
                           htmlFor="sample-file"
-                          className="inline-flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm hover:bg-accent"
+                          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary"
                         >
                           <Upload className="size-4" />
                           파일 업로드
@@ -674,7 +693,7 @@ export function AutomationApp() {
                           onChange={onFileChange}
                         />
                         {activeSample && (
-                          <span className="flex items-center gap-1.5 text-sm text-emerald-700">
+                          <span className="flex items-center gap-1.5 text-sm font-medium text-[#00a661]">
                             <FileText className="size-4" />
                             {activeSample.name}
                             {activeSample.fromPreset && " (예시 데이터)"}
@@ -685,10 +704,10 @@ export function AutomationApp() {
                         value={pasteText}
                         onChange={(e) => setPasteText(e.target.value)}
                         placeholder="또는 여기에 샘플 데이터를 직접 붙여넣으세요 (CSV 행, 텍스트 등)"
-                        className="min-h-[72px] text-xs"
+                        className="min-h-[80px] bg-background text-xs"
                       />
                       {activeSample?.note && (
-                        <p className="text-xs text-amber-700">
+                        <p className="text-xs text-[#c26a00]">
                           {activeSample.note} — 샘플 기준 실행 결과가
                           표시됩니다.
                         </p>
@@ -709,6 +728,8 @@ export function AutomationApp() {
                       <Button
                         onClick={runExecute}
                         disabled={!activeSample || executing}
+                        size="lg"
+                        className="w-full"
                       >
                         {executing ? (
                           <>
@@ -718,7 +739,9 @@ export function AutomationApp() {
                         ) : (
                           <>
                             <Zap />
-                            {activeSample ? "실행하기" : "샘플 데이터를 선택해 주세요"}
+                            {activeSample
+                              ? "실행하기"
+                              : "샘플 데이터를 선택해 주세요"}
                           </>
                         )}
                       </Button>
@@ -737,73 +760,74 @@ export function AutomationApp() {
                   )}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </Section>
+          </div>
+        )}
 
-      {/* ============ [3] 실행 결과 ============ */}
-      {executed && (
-        <div ref={resultRef} className="mt-8 scroll-mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="flex size-6 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                  3
-                </span>
+        {/* ============ [3] 실행 결과 ============ */}
+        {executed && (
+          <div ref={resultRef} className="mt-4 scroll-mt-4 sm:mt-6">
+            <Section>
+              <h2 className="text-lg font-bold sm:text-xl">
                 {executedStepType === "executable"
                   ? "실행 결과"
                   : "생성된 아티팩트"}
-              </CardTitle>
-              <CardDescription>
-                {executedStepType !== "executable" &&
-                  "외부 연동/사람 승인 단계라 실행 대신 아티팩트를 생성했습니다."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* 임팩트 스탯 */}
-              <div className="flex flex-wrap items-end gap-x-6 gap-y-2 rounded-xl border bg-gradient-to-br from-primary/10 via-background to-background p-4">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">
-                    수동 작업
-                  </p>
-                  <p className="text-2xl font-bold tracking-tight text-muted-foreground line-through decoration-muted-foreground/50">
-                    {executed.manual_minutes_est}분
-                  </p>
-                </div>
-                <div className="pb-1 text-xl text-muted-foreground">→</div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">
-                    AI 실행{executed.cached && " · 프리셋 사전 실측"}
-                  </p>
-                  <p className="text-gradient-primary text-3xl font-extrabold tracking-tight">
-                    {execSecondsLabel(executed.execution_seconds)}
-                  </p>
+              </h2>
+              {executedStepType !== "executable" && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  외부 연동/사람 승인 단계라 실행 대신 아티팩트를 생성했습니다.
+                </p>
+              )}
+
+              {/* 임팩트 스탯 — 토스 스타일 큰 숫자 */}
+              <div className="mt-5 rounded-2xl bg-secondary p-5 sm:p-6">
+                <div className="flex flex-wrap items-end gap-x-6 gap-y-4 sm:gap-x-8">
+                  <div>
+                    <p className="text-[13px] font-medium text-muted-foreground">
+                      수동 작업
+                    </p>
+                    <p className="mt-0.5 text-2xl font-bold tracking-tight text-muted-foreground line-through decoration-muted-foreground/40 sm:text-3xl">
+                      {executed.manual_minutes_est}분
+                    </p>
+                  </div>
+                  <div className="pb-1.5 text-xl text-muted-foreground/60">
+                    →
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-medium text-muted-foreground">
+                      AI 실행
+                      {executed.cached && " · 프리셋 사전 실측"}
+                    </p>
+                    <p className="mt-0.5 text-3xl font-extrabold tracking-tight text-primary sm:text-4xl">
+                      {execSecondsLabel(executed.execution_seconds)}
+                    </p>
+                  </div>
                 </div>
                 {annualHoursSaved !== null && (
-                  <div className="ml-auto text-right">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      이 빈도로 반복하면
-                    </p>
-                    <p className="text-xl font-bold tracking-tight text-emerald-700">
-                      연 약 {annualHoursSaved}시간 절약
+                  <div className="mt-4 border-t border-border pt-4">
+                    <p className="text-[15px] font-semibold">
+                      이 빈도로 반복하면{" "}
+                      <span className="text-[#00a661]">
+                        연 약 {annualHoursSaved}시간
+                      </span>
+                      을 아낄 수 있습니다
                     </p>
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold">결과물</h3>
+              <div className="mt-6 flex items-center justify-between gap-2">
+                <h3 className="text-[15px] font-bold">결과물</h3>
                 <div className="flex gap-1.5">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={copyArtifact}
-                    className="gap-1.5"
+                    className="gap-1"
                   >
                     {copiedArtifact ? (
                       <>
-                        <Check className="size-3.5 text-emerald-600" />
+                        <Check className="size-3.5 text-[#00a661]" />
                         복사됨
                       </>
                     ) : (
@@ -817,14 +841,14 @@ export function AutomationApp() {
                     variant="outline"
                     size="sm"
                     onClick={downloadArtifact}
-                    className="gap-1.5"
+                    className="gap-1"
                   >
                     <Download className="size-3.5" />
-                    .md 다운로드
+                    .md
                   </Button>
                 </div>
               </div>
-              <div className="text-sm">
+              <div className="mt-2 text-[15px]">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={mdComponents}
@@ -833,20 +857,20 @@ export function AutomationApp() {
                 </ReactMarkdown>
               </div>
 
-              <div className="rounded-lg border bg-muted/40 p-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold">
+              <div className="mt-6 rounded-2xl bg-secondary p-5">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <h3 className="text-[15px] font-bold">
                     재사용 프롬프트팩 · SOP
                   </h3>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={copyPromptPack}
-                    className="gap-1.5"
+                    className="gap-1"
                   >
                     {copied ? (
                       <>
-                        <Check className="size-3.5 text-emerald-600" />
+                        <Check className="size-3.5 text-[#00a661]" />
                         복사됨
                       </>
                     ) : (
@@ -868,12 +892,12 @@ export function AutomationApp() {
               </div>
 
               {executed.caveats.length > 0 && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-                  <h3 className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold text-amber-800">
+                <div className="mt-4 rounded-2xl bg-[#fff8e6] p-5">
+                  <h3 className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#c26a00]">
                     <AlertTriangle className="size-4" />
                     확인 필요 사항
                   </h3>
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-amber-800">
+                  <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-[#8a5a00]">
                     {executed.caveats.map((c, i) => (
                       <li key={i}>{c}</li>
                     ))}
@@ -881,19 +905,24 @@ export function AutomationApp() {
                 </div>
               )}
 
-              <Button variant="outline" onClick={resetAll} className="gap-1.5">
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={resetAll}
+                className="mt-6 w-full gap-1.5"
+              >
                 <RotateCcw className="size-4" />
-                처음부터
+                처음부터 다시 하기
               </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </Section>
+          </div>
+        )}
 
-      <footer className="mt-10 text-center text-xs text-muted-foreground">
-        조언이 아니라 실행 — 샘플 데이터를 넣으면 결과물이 나옵니다. 파일은
-        서버에 저장되지 않습니다.
-      </footer>
+        <footer className="mt-10 text-center text-xs leading-relaxed text-muted-foreground">
+          조언이 아니라 실행 — 샘플 데이터를 넣으면 결과물이 나옵니다.
+          <br />
+          파일은 서버에 저장되지 않습니다.
+        </footer>
       </div>
     </div>
   );
@@ -921,17 +950,17 @@ function NonExecutablePanel({
 }) {
   const isIntegration = step.execution_type === "integration_needed";
   return (
-    <div className="space-y-3">
-      <p className="text-sm font-medium">「{step.name}」</p>
+    <div className="space-y-3.5">
+      <p className="text-[15px] font-bold">「{step.name}」</p>
       {isIntegration ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           이 단계는 메일 발송·사내 DB·외부 채널 등{" "}
           <strong className="text-foreground">외부 시스템 연동</strong>이 필요해
           이 자리에서 바로 실행할 수 없습니다. 대신 연동 방법 안내와 재사용
           프롬프트팩·SOP를 생성해 드릴 수 있습니다.
         </p>
       ) : (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           이 단계는 <strong className="text-foreground">사람 판단이 핵심</strong>
           이라 전면 자동화를 권장하지 않습니다. &quot;AI 초안 + 사람 승인&quot;
           반자동 설계를 권장하며, 참고용 아티팩트를 생성해 드릴 수 있습니다.
@@ -940,7 +969,7 @@ function NonExecutablePanel({
       <div className="flex flex-wrap items-center gap-2">
         <Label
           htmlFor={`sample-file-${step.id}`}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm hover:bg-accent"
+          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary"
         >
           <Upload className="size-4" />
           샘플 파일 (선택)
@@ -953,7 +982,7 @@ function NonExecutablePanel({
           onChange={onFileChange}
         />
         {sampleName && (
-          <span className="flex items-center gap-1.5 text-sm text-emerald-700">
+          <span className="flex items-center gap-1.5 text-sm font-medium text-[#00a661]">
             <FileText className="size-4" />
             {sampleName}
           </span>
@@ -972,6 +1001,7 @@ function NonExecutablePanel({
         variant="secondary"
         onClick={onRun}
         disabled={!hasSample || executing}
+        className="w-full sm:w-auto"
       >
         {executing ? (
           <>
