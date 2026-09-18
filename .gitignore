@@ -2,6 +2,7 @@ node_modules/
 .next/
 out/
 eval_runs/
+ops_log.md
 .env
 .env.*
 !.env.example
