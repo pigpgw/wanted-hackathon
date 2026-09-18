@@ -11,6 +11,8 @@
 - `docs/problems.md` → `opportunity_sizing.md` → `solutions.md` → `decision.md` — 문제 정의에서 최종 결정까지
 - `docs/measurement.md` — 지표 계획
 - `docs/service_design.md` — **채택 솔루션(A) 서비스 기획서** — 입출력 계약·스코어링·스택·non-goals·2일 타임라인
+- `docs/submission_draft.md` — 제출 폼 4개 항목 초안 (문제·AI활용·AI툴·링크)
+- `docs/process_log.md` — 과정 기록 러너 (제출 수치·발표 과정 출처)
 - `docs/loop.md` — 반복 작업 루프 정의
 - `AGENTS.md` — 에이전트 작업 컨벤션
 - `hackathon_builder_workflow.md` — 이 레포가 따르는 워크플로우 (이 대회용 재작성)
