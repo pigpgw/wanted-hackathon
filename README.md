@@ -5,6 +5,7 @@
 ## 문서 지도
 
 - `docs/rules.md` — 대회 룰, 심사 기준·배점, 일정, 심사위원
+- `docs/submission_checklist.md` — 제출 폼 필수 항목·약관·투표 규칙 체크리스트 (공식 API+번들 추출)
 - `docs/challenge.md` — 오픈 토픽 해석, 제공 리소스
 - `docs/research/` — 심사위원·파트너사 리서치
 - `docs/problems.md` → `opportunity_sizing.md` → `solutions.md` → `decision.md` — 문제 정의에서 최종 결정까지
