@@ -35,4 +35,5 @@ export interface ExecuteResult {
   manual_minutes_est: number;
   prompt_pack: string; // 재사용 프롬프트 + SOP
   caveats: string[];
+  cached?: boolean; // 프리셋 사전 실측 결과인 경우 true
 }

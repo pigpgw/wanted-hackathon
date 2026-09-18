@@ -94,7 +94,7 @@ export async function POST(req: Request) {
       p.execute[normalized.step.id] !== undefined
   );
   if (preset) {
-    return NextResponse.json(preset.execute[normalized.step.id]);
+    return NextResponse.json({ ...preset.execute[normalized.step.id], cached: true });
   }
 
   try {
@@ -109,7 +109,7 @@ export async function POST(req: Request) {
         p.execute[normalized.step.id] !== undefined
     );
     if (fallback) {
-      return NextResponse.json(fallback.execute[normalized.step.id]);
+      return NextResponse.json({ ...fallback.execute[normalized.step.id], cached: true });
     }
     return NextResponse.json(
       { error: "실행 실패 — 다시 시도해 주세요" },
