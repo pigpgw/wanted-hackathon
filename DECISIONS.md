@@ -20,3 +20,12 @@
   - 버그 수정: `lib/presets.ts` canonical 데모 집계 산수 오류(online 961,000→1,061,000 기재, 합계·비중·SKU-101 오류) → 실측값으로 정정.
   - 정리: `hackathon_builder_workflow.md` stale S2a 2곳, `AGENTS.md` 빌드 단계 구조·문서 SoT 표·병렬 세션 소유권 규칙, `NEXT.md` 작업 패키지(WP1~3) 정의, `.env.example` 추가.
 - **병렬 작업 방식 확정**: 새 세션들을 NEXT.md의 WP 단위로 투입 — 파일 소유권으로 충돌 방지. 오케스트레이터(메인 세션)가 통합·검수·배포.
+- **오케스트레이션 메커니즘 실측 확정 — tmux 미도입**
+  - 읽기: `~/.local/share/devin/cli/transcripts/<id>.json`에 전체 대화 원문 존재 (실측) + `devin list --format json`으로 세션 목록.
+  - 쓰기: `devin -r <id> -p "지시"` 실측 성공 — 단 **닫힌 세션만**. 열려있는 세션은 프로세스 lock으로 `failed to start ACP agent session` (실측).
+  - tmux 보류 이유: 추가 능력은 `send-keys`로 열린 세션에 실시간 주입뿐 — 워커 승인 프롬프트 때문에 실시간 자동화는 어차피 취약. `-p` 원샷 + `-r -p` 후속 지시 + NEXT.md 파일 조율로 충분. 정규 API 경로는 `devin acp`(JSON-RPC) — 필요 시 검토.
+  - 절차: `NEXT.md` 오케스트레이션 섹션 (세션 레지스트리 포함).
+- **오케스트레이션 단순화 — 검증된 경로만 유지** (같은 날 정정)
+  - 제거: 자율 `devin -p` 원샷 워커 모드 — 미검증 + 권한 함정(exec 필요 작업은 accept-edits 부족, smart 계정별 미보장, bypass 위험). 기동은 대화형 탭으로 통일 — 승인도 사용자가 그 자리에서 처리.
+  - 제거: 워커의 NEXT.md 자기 행 갱신 — 미보고·동시 쓰기 위험. NEXT.md는 오케스트레이터 단독 기록, 워커는 읽기 전용 + git 커밋 금지.
+  - 유지: transcripts 검수, `-r -p` 주입(닫힌 세션), WP2는 메인 세션 subagent (lock·권한 문제 없음).
