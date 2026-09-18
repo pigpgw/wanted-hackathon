@@ -42,7 +42,7 @@ Phase D (본선):     TOP20 시 데모데이 발표 준비 (~10/17)
 ## 3. Agent Setup — 완료 ✅
 
 - `AGENTS.md` — 대회 요약, 산출물 구조, 컨벤션(evidence tier, 리서치 전 구현 금지 등), 검증 명령
-- `.agents/skills/fit-translator-eval/SKILL.md` — 평가셋 채점 스킬
+- `.agents/skills/work-hack-eval/SKILL.md` — 평가셋 채점 스킬
 - `NEXT.md`, `DECISIONS.md` — 루프 상태 파일
 - YouTube 등 영상은 transcript 추출 후 `docs/context/videos/*.md`로 저장 (링크만으로는 못 읽음) — 심사위원 김덕중 강연 영상(`research/firb.md` 참조)이 후보
 - (다른 툴 환경에서 이 워크플로우를 재사용할 경우: Codex면 AGENTS.md+plugin, lazyCodex `ulw-research` 등이 같은 역할 — 경로만 치환)
@@ -56,8 +56,8 @@ Phase D (본선):     TOP20 시 데모데이 발표 준비 (~10/17)
 
 ## 5~9. Problem Statement → Measurement — 완료 ✅
 
-- `docs/problems.md` (P1~P5), `docs/opportunity_sizing.md`, `docs/solutions.md`, `docs/decision.md` (ICE + judging fit → **S2a "핏 번역기" 채택**), `docs/measurement.md` (North Star: 공고당 맞춤 지원서 완성 시간)
-- 결론: "구직자가 요구 역량 제각각인 공고에 같은 이력서를 돌려 쓰는 문제를, 공고 요구↔경험 매핑+맞춤 문단 재작성 에이전트로 푼다. 데모 scope = 핵심 플로우 1개."
+- `docs/problems.md` (P1~P5 + 유저 피드백·대체재 분석), `docs/opportunity_sizing.md`, `docs/solutions.md`, `docs/decision.md` (ICE + judging fit + 차별성 → **A "업무→실행 자동화기" 채택**), `docs/measurement.md` (North Star: 1회 실행으로 절감된 업무 시간)
+- 결론: "직장인이 '자기 업무 중 뭘 자동화할지' 분해·판단할 도구가 없는 문제를, 업무 서술→단계 분해→자동화 우선순위→샘플 데이터 실제 1회 실행까지 해주는 에이전트로 푼다. 데모 scope = 핵심 플로우 1개."
 
 ## 10. Loop Engineering — 완료 ✅ + 운영 버전 추가
 
