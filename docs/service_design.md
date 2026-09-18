@@ -83,7 +83,8 @@
   "execution_seconds": 28,
   "manual_minutes_est": 40,
   "prompt_pack": "매주 재사용 가능한 프롬프트+SOP 텍스트",
-  "caveats": ["샘플 50행 기준 실행 — 실데이터는 검토 필요"]
+  "caveats": ["샘플 50행 기준 실행 — 실데이터는 검토 필요"],
+  "cached": true  // 선택 — 프리셋 사전 실측 결과를 그대로 반환한 경우만
 }
 ```
 

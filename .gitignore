@@ -9,3 +9,4 @@ ops_log.md
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+.vercel

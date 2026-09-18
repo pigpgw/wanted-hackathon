@@ -774,7 +774,7 @@ export function AutomationApp() {
                 <div className="pb-1 text-xl text-muted-foreground">→</div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">
-                    AI 실행
+                    AI 실행{executed.cached && " · 프리셋 사전 실측"}
                   </p>
                   <p className="text-gradient-primary text-3xl font-extrabold tracking-tight">
                     {execSecondsLabel(executed.execution_seconds)}
