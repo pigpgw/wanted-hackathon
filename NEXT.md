@@ -5,9 +5,11 @@
 - **Phase B — 빌드 단계.** 솔루션: A "업무→실행 자동화기" (`docs/service_design.md`).
 - **WP1·WP2 완료** (2026-09-18): eval_set 13케이스 확충 + Next.js 서비스 구현(3단계 UI·API 3개·Tailwind+shadcn·프리셋 캐시/재시도/폴백). `npm run build` 통과, 로컬 계약 curl 검증 완료.
 - 오케스트레이터 검수 수정: `/api/execute` 프리셋 캐시에 `sample_data` 일치 조건 추가 (다른 데이터에 통조림 결과 반환 방지).
-- iter 카운터: **2/10**
-  - iter1 (gemini-3.5-flash): exec 81.8%·P0 2 — 실패 전부 429 레이트리밋(무료 티어 20 RPM). 라우트 재시도를 서버 retryDelay 적응형 대기로 수정.
-  - iter2 (gemini-3.1-flash-lite — 3.5 용량 고갈로 교체): **exec 100%·P0 0·decompose 13/13**. 남은 이슈 = 경계 케이스 09~12 분류 불일치 (실행 불가 업무를 executable로 과대포장, P1).
+- iter 카운터: **4/10 — 동결 후보** (stop: P0=0 ✅·exec 100% ✅·분해 적절성은 인간 채점 대상)
+  - iter1 (3.5-flash): exec 81.8%·P0 2 — 전부 429. 라우트 재시도 → retryDelay 적응 대기.
+  - iter2 (3.1-flash-lite로 교체 — 3.5 포화): exec 100%·P0 0·decompose 13/13.
+  - iter3 (분해 프롬프트 정직화): 분류일치 9→10. 09·11 정직해짐, 07 과보수 회귀.
+  - iter4 (산출물 유형 기준 추가): 분류일치 10 유지·07 회복·11 재불일치. 잔여 10·11·12는 metric 한계+1건 논쟁적 — raw상 추천 단계는 대부분 정직. **수렴 선언 — 프롬프트 추가 튜닝은 역효과 위험** (DECISIONS.md).
 - 모델: `gemini-3.1-flash-lite` (`.env`). Gemini 무료 티어 — 모델별 RPM 버킷, 3.5/3.6/3.8은 현재 수요 포화·차단 상태.
 
 ## 작업 패키지 (병렬 세션 배정용)
