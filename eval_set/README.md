@@ -1,6 +1,6 @@
 # eval_set — 업무→실행 자동화기 평가셋
 
-`docs/loop_setup.md` §4 스키마. 케이스 구성 계획은 `docs/service_design.md` §12.
+케이스 구성 계획은 `docs/service_design.md` §12. 실행·채점은 `scripts/eval_run.py`.
 
 ## 케이스 디렉터리 규격
 
