@@ -12,13 +12,25 @@ const VALID_TYPES: readonly ExecutionType[] = [
   "human_judgment",
 ];
 
-// LLM 에러/JSON 파싱 실패 시 1회 재시도 (service_design.md §10)
+// LLM 에러/JSON 파싱 실패 시 재시도 (service_design.md §10) — 429면 서버 지정 retryDelay 파싱해 대기, 총 대기 ≤50s
 async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
-  try {
-    return await fn();
-  } catch {
-    return await fn();
+  const deadline = Date.now() + 50_000;
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (attempt === 2) break;
+      const m = /retry in ([\d.]+)s/i.exec(String(err));
+      const waitMs = m
+        ? Math.ceil(parseFloat(m[1])) * 1000 + 500
+        : 3000 * (attempt + 1);
+      if (Date.now() + waitMs > deadline) break;
+      await new Promise((r) => setTimeout(r, waitMs));
+    }
   }
+  throw lastErr;
 }
 
 export async function POST(req: Request) {
