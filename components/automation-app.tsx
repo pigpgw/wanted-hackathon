@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   Check,
   Copy,
+  Download,
   FileText,
   Loader2,
   Plug,
@@ -191,12 +192,14 @@ export function AutomationApp() {
   const [selectedStep, setSelectedStep] = useState<WorkStep | null>(null);
   const [fileSample, setFileSample] = useState<SampleFile | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [pasteText, setPasteText] = useState("");
 
   // [3] 실행 결과 상태
   const [executed, setExecuted] = useState<ExecuteResult | null>(null);
   const [executedStepType, setExecutedStepType] =
     useState<ExecutionType | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedArtifact, setCopiedArtifact] = useState(false);
 
   // 로딩·에러 (§10 — 조용한 크래시 금지, 명시적 표시 + 재시도)
   const [decomposing, setDecomposing] = useState(false);
@@ -245,6 +248,8 @@ export function AutomationApp() {
     setExecuted(null);
     setDecomposeError(null);
     setExecuteError(null);
+    setFileSample(null);
+    setPasteText("");
   }
 
   async function runDecompose() {
@@ -311,7 +316,15 @@ export function AutomationApp() {
     setFileSample({ name: f.name, text, note, fromPreset: false });
   }
 
-  const activeSample = fileSample ?? presetSample;
+  const pasteSample: SampleFile | null = pasteText.trim()
+    ? {
+        name: "직접 붙여넣기 입력",
+        text: pasteText.trim(),
+        note: null,
+        fromPreset: false,
+      }
+    : null;
+  const activeSample = fileSample ?? pasteSample ?? presetSample;
 
   async function runExecute() {
     if (!selectedStep || !decomposed || !activeSample) return;
@@ -364,6 +377,7 @@ export function AutomationApp() {
     setSelectedStep(null);
     setFileSample(null);
     setFileError(null);
+    setPasteText("");
     setExecuted(null);
     setExecutedStepType(null);
     setDecomposeError(null);
@@ -371,45 +385,105 @@ export function AutomationApp() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function copyArtifact() {
+    if (!executed) return;
+    try {
+      await navigator.clipboard.writeText(executed.result_artifact);
+      setCopiedArtifact(true);
+      setTimeout(() => setCopiedArtifact(false), 2000);
+    } catch {
+      /* 클립보드 권한 거부 시 무시 */
+    }
+  }
+
+  function downloadArtifact() {
+    if (!executed) return;
+    const blob = new Blob([executed.result_artifact], {
+      type: "text/markdown;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${decomposed?.task_title ?? "result"}-result.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const execSecondsLabel = (s: number) =>
     s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초` : `${s}초`;
 
   const stage = executed ? 3 : decomposed ? 2 : 1;
 
+  // 빈도 문자열 → 연간 횟수 (절감 시간 계산용. 추정치라 "약" 표기)
+  const timesPerYear = (() => {
+    const f = frequency.trim();
+    if (!f) return null;
+    const num = (f.match(/\d+/) ?? ["1"]).map(Number)[0] || 1;
+    if (f.includes("매일") || f.includes("매번")) return 250;
+    if (f.includes("격주")) return 26;
+    if (f.includes("주")) return 52 * num;
+    if (f.includes("월")) return 12 * num;
+    if (f.includes("분기")) return 4 * num;
+    if (f.includes("년")) return num;
+    return null;
+  })();
+
+  const annualHoursSaved =
+    executed && timesPerYear
+      ? Math.round((executed.manual_minutes_est * timesPerYear) / 60)
+      : null;
+
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-10">
-      <header className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight">
-          업무→실행 자동화기
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          반복 업무를 말로 적으면, AI가 단계로 분해하고 샘플 데이터로{" "}
-          <strong className="text-foreground">그 자리에서 실제로 한 번 실행</strong>
-          해 결과물을 보여줍니다.
-        </p>
-        {/* 3단계 표시 */}
-        <div className="mt-5 flex items-center justify-center gap-2 text-xs sm:text-sm">
-          {["1. 업무 서술", "2. 분해·단계 선택", "3. 실행·결과"].map(
-            (label, i) => (
+    <div className="min-h-screen bg-dot-grid">
+      <div className="mx-auto w-full max-w-3xl px-4 pb-16 pt-12">
+        <header className="mb-10 text-center">
+          <span className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm">
+            <Sparkles className="size-3.5 text-primary" />
+            업무→실행 자동화기
+          </span>
+          <h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
+            조언이 아니라,{" "}
+            <span className="text-gradient-primary">실행.</span>
+          </h1>
+          <p className="mx-auto mt-3 max-w-xl leading-relaxed text-muted-foreground">
+            반복 업무를 말로 적으면 AI가 단계로 분해하고, 가장 자동화하기 좋은
+            단계를 골라{" "}
+            <strong className="text-foreground">
+              샘플 데이터로 그 자리에서 한 번 실행
+            </strong>
+            해 결과물을 보여줍니다.
+          </p>
+          {/* 3단계 표시 */}
+          <div className="mt-6 flex items-center justify-center gap-2 text-xs sm:text-sm">
+            {["업무 서술", "분해·단계 선택", "실행·결과"].map((label, i) => (
               <span key={label} className="flex items-center gap-2">
                 <span
                   className={cn(
-                    "rounded-full border px-3 py-1",
+                    "flex items-center gap-1.5 rounded-full border px-3 py-1 transition-colors",
                     stage === i + 1
                       ? "border-primary bg-primary text-primary-foreground"
                       : stage > i + 1
                         ? "border-primary/40 text-primary"
-                        : "text-muted-foreground"
+                        : "bg-card text-muted-foreground"
                   )}
                 >
+                  <span
+                    className={cn(
+                      "flex size-4 items-center justify-center rounded-full text-[10px] font-bold",
+                      stage === i + 1
+                        ? "bg-primary-foreground/20"
+                        : "bg-muted"
+                    )}
+                  >
+                    {i + 1}
+                  </span>
                   {label}
                 </span>
                 {i < 2 && <span className="text-muted-foreground">→</span>}
               </span>
-            )
-          )}
-        </div>
-      </header>
+            ))}
+          </div>
+        </header>
 
       {/* ============ [1] 서술 입력 ============ */}
       <Card>
@@ -581,8 +655,8 @@ export function AutomationApp() {
                         「{selectedStep.name}」 단계를 지금 바로 실행합니다.
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        샘플 파일(CSV/TXT/MD, 500KB 이하)을 업로드하거나, 예시
-                        데이터로 실행하세요. 서버에 저장되지 않습니다.
+                        샘플 파일(CSV/TXT/MD, 500KB 이하)을 업로드하거나 직접
+                        붙여넣으세요. 서버에 저장되지 않습니다.
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
                         <Label
@@ -607,6 +681,12 @@ export function AutomationApp() {
                           </span>
                         )}
                       </div>
+                      <Textarea
+                        value={pasteText}
+                        onChange={(e) => setPasteText(e.target.value)}
+                        placeholder="또는 여기에 샘플 데이터를 직접 붙여넣으세요 (CSV 행, 텍스트 등)"
+                        className="min-h-[72px] text-xs"
+                      />
                       {activeSample?.note && (
                         <p className="text-xs text-amber-700">
                           {activeSample.note} — 샘플 기준 실행 결과가
@@ -676,21 +756,74 @@ export function AutomationApp() {
                   : "생성된 아티팩트"}
               </CardTitle>
               <CardDescription>
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800">
-                    수동 {executed.manual_minutes_est}분 →{" "}
-                    {execSecondsLabel(executed.execution_seconds)}
-                  </span>
-                  {executedStepType !== "executable" && (
-                    <span className="text-xs">
-                      외부 연동/사람 승인 단계라 실행 대신 아티팩트를
-                      생성했습니다.
-                    </span>
-                  )}
-                </div>
+                {executedStepType !== "executable" &&
+                  "외부 연동/사람 승인 단계라 실행 대신 아티팩트를 생성했습니다."}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* 임팩트 스탯 */}
+              <div className="flex flex-wrap items-end gap-x-6 gap-y-2 rounded-xl border bg-gradient-to-br from-primary/10 via-background to-background p-4">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    수동 작업
+                  </p>
+                  <p className="text-2xl font-bold tracking-tight text-muted-foreground line-through decoration-muted-foreground/50">
+                    {executed.manual_minutes_est}분
+                  </p>
+                </div>
+                <div className="pb-1 text-xl text-muted-foreground">→</div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    AI 실행
+                  </p>
+                  <p className="text-gradient-primary text-3xl font-extrabold tracking-tight">
+                    {execSecondsLabel(executed.execution_seconds)}
+                  </p>
+                </div>
+                {annualHoursSaved !== null && (
+                  <div className="ml-auto text-right">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      이 빈도로 반복하면
+                    </p>
+                    <p className="text-xl font-bold tracking-tight text-emerald-700">
+                      연 약 {annualHoursSaved}시간 절약
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold">결과물</h3>
+                <div className="flex gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyArtifact}
+                    className="gap-1.5"
+                  >
+                    {copiedArtifact ? (
+                      <>
+                        <Check className="size-3.5 text-emerald-600" />
+                        복사됨
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="size-3.5" />
+                        복사
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={downloadArtifact}
+                    className="gap-1.5"
+                  >
+                    <Download className="size-3.5" />
+                    .md 다운로드
+                  </Button>
+                </div>
+              </div>
               <div className="text-sm">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -761,6 +894,7 @@ export function AutomationApp() {
         조언이 아니라 실행 — 샘플 데이터를 넣으면 결과물이 나옵니다. 파일은
         서버에 저장되지 않습니다.
       </footer>
+      </div>
     </div>
   );
 }
