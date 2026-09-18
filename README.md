@@ -12,6 +12,6 @@
 - `docs/measurement.md` — 지표 계획
 - `docs/loop.md` — 반복 작업 루프 정의
 - `AGENTS.md` — 에이전트 작업 컨벤션
-- `devin_playbook_hackathon.md`, `hackathon_builder_workflow.md` — 이 레포가 따르는 워크플로우
+- `hackathon_builder_workflow.md` — 이 레포가 따르는 워크플로우 (이 대회용 재작성)
 
 대회 페이지: https://event.wanted.co.kr/ai-championship/2026
