@@ -14,7 +14,7 @@ eval_run.py — 평가셋을 서비스 엔드포인트에 실행하고 자동 �
   - classification_match: execution_type 분포 vs expected_automatable
   - exec_success (P0)   : result_artifact 비어있지 않음
   - advice_only (P0 후보): 결과물이 지시문 형태인지 휴리스틱 → 인간 확인 필요
-인간 채점(분해 적절성·결과물 채택률)은 work-hack-eval 스킬이 scores.md 위에서 수행.
+인간 채점(분해 적절성·결과물 채택률)은 scores.md를 보고 수동으로 수행.
 
 API 계약 source of truth: lib/types.ts (DecomposeInput/ExecuteInput) + service_design.md §4.
 계약 변경 시 이 스크립트의 요청 페이로드도 같은 커밋에서 맞출 것.
