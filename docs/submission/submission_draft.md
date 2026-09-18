@@ -37,7 +37,7 @@
 
 > 초안 (AI 툴·기술 스택 선택 필드 — 1개 이상):
 
-- **LLM (OpenAI 호환 API)** — 업무 분해·적합도 판정·샘플 데이터 실행·SOP 생성의 추론 엔진. 평가는 Gemini 3.1 Flash Lite로 측정, 프로덕션 키는 배포 시 확정 (Solar 등 호환 모델로 교체 가능한 설계)
+- **OpenAI GPT (OpenAI 호환 API)** — 업무 분해·적합도 판정·샘플 데이터 실행·SOP 생성의 추론 엔진. 프로덕션은 OpenAI 모델, 품질 평가는 Gemini 3.1 Flash Lite로 측정 — OpenAI 호환 설계로 모델 교체 가능
 - Next.js (App Router) + Vercel — 단일 페이지 웹앱, 서버리스 API 3개
 - Tailwind CSS v4 + shadcn/ui + Pretendard — 한국어 우선 데모 UI
 
