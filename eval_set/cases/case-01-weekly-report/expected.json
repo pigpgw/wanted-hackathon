@@ -1,0 +1,15 @@
+{
+  "id": "case-01",
+  "type": "report",
+  "expected_steps": [
+    "팀원별 업데이트 수집·취합",
+    "완료/진행중/지연 분류",
+    "보고서 양식으로 정리·작성"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": true,
+    "recommended_step_should_be": "executable"
+  },
+  "sample_file": "sample.txt",
+  "notes": "대표적인 텍스트 취합→분류→보고서 유형. executable(텍스트 변환) 단계가 나와야 정상."
+}

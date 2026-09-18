@@ -1,0 +1,26 @@
+{
+  "SessionStart": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "./scripts/loop_context.sh",
+          "timeout": 5
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "./scripts/loop_gate.sh",
+          "timeout": 10
+        }
+      ]
+    }
+  ]
+}
