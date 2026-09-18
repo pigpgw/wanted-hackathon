@@ -1,0 +1,15 @@
+{
+  "id": "case-12",
+  "type": "boundary",
+  "expected_steps": [
+    "해야 할 일 목록화",
+    "우선순위 기준 세우기",
+    "실행 순서 결정"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": false,
+    "recommended_step_should_be": "human_judgment"
+  },
+  "sample_file": "sample.txt",
+  "notes": "구체 데이터·산출물 정의가 없는 모호·감정성 서술 — 분해가 나와도 각 단계는 사람이 기준을 정하는 판단 작업이라 executable이 나오면 과대포장 의심. 샘플은 업무/개인이 뒤섞인 비정형 생각 나열로 실행 대상 데이터가 아님."
+}

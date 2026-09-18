@@ -1,0 +1,15 @@
+{
+  "id": "case-13",
+  "type": "boundary",
+  "expected_steps": [
+    "입사자 명단·필요 계정 정리",
+    "각 SaaS 계정 발급",
+    "온보딩 자료 안내 발송"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": true,
+    "recommended_step_should_be": "integration_needed"
+  },
+  "sample_file": "sample.csv",
+  "notes": "혼합 boundary — '명단 정리'처럼 executable로 볼 수 있는 보조 단계가 존재하나, 사용자의 핵심 요구(계정 자동 발급)는 각 SaaS 관리자 API 연동 없이는 불가. 추천 단계가 integration_needed로 나와야 정직한 분류로 간주. 인명·입사일 모두 가상."
+}

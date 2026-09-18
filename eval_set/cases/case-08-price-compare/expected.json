@@ -1,0 +1,15 @@
+{
+  "id": "case-08",
+  "type": "transform",
+  "expected_steps": [
+    "경쟁사별 가격 메모 정리",
+    "항목 통일 비교표 작성",
+    "우리 요금 위치 요약"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": true,
+    "recommended_step_should_be": "executable"
+  },
+  "sample_file": "sample.txt",
+  "notes": "비정형 메모→정형 비교표 변환 유형. 매출 집계 프리셋과 달리 가격 비교가 목적. 경쟁사명 전부 가상."
+}

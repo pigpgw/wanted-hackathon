@@ -1,0 +1,15 @@
+{
+  "id": "case-06",
+  "type": "report",
+  "expected_steps": [
+    "출퇴근 로그 파싱·정리",
+    "지각/초과근무/누락 집계",
+    "월간 근태 요약 작성"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": true,
+    "recommended_step_should_be": "executable"
+  },
+  "sample_file": "sample.txt",
+  "notes": "규칙이 명시된 로그 집계 유형 — 판정 기준(9시/20시)을 서술에 넣어 executable 여부가 명확하도록 설계. 사원은 EMP 코드로 가명 처리."
+}

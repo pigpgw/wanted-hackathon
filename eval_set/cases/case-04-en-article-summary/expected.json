@@ -1,0 +1,15 @@
+{
+  "id": "case-04",
+  "type": "transform",
+  "expected_steps": [
+    "영문 원문 읽기·구조 파악",
+    "핵심 내용 한국어 요약",
+    "팀 공유용 정리본 작성"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": true,
+    "recommended_step_should_be": "executable"
+  },
+  "sample_file": "sample.md",
+  "notes": "외국어→한국어 요약·번역 유형. 텍스트 입출력이 명확해 executable 기대. 회사명·제품명·인명 모두 가상."
+}

@@ -1,0 +1,15 @@
+{
+  "id": "case-11",
+  "type": "boundary",
+  "expected_steps": [
+    "방문 일정·동선 계획",
+    "현장 진열·위생 점검",
+    "매니저 면담·현장 이슈 파악"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": false,
+    "recommended_step_should_be": "human_judgment"
+  },
+  "sample_file": "sample.txt",
+  "notes": "오프라인 방문·현장 확인이 핵심인 물리 작업 — 텍스트로 실행 가능한 단계가 없어야 정직. '동선 계획' 등 보조 단계를 executable로 분류할 여지는 있으나 이 업무의 실행으로 보기 어려움. 샘플은 형식 통일용 점검 체크리스트."
+}

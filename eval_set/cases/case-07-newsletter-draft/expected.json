@@ -1,0 +1,15 @@
+{
+  "id": "case-07",
+  "type": "draft",
+  "expected_steps": [
+    "소재 목록 정리·선별",
+    "뉴스레터 구성·초안 작성",
+    "발송 전 공지사항 포함 여부 검토"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": true,
+    "recommended_step_should_be": "executable"
+  },
+  "sample_file": "sample.md",
+  "notes": "소재 목록→정형 글 초안 생성 유형(draft). case-01의 내부 진행상황 보고와 달리 외부 발행용 마케팅 문서. 제품명·행사명 모두 가상."
+}

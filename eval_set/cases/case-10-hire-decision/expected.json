@@ -1,0 +1,15 @@
+{
+  "id": "case-10",
+  "type": "boundary",
+  "expected_steps": [
+    "후보별 평가 기준 정리",
+    "팀 적합도·성장성 판단",
+    "최종 채용 결정·통보"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": false,
+    "recommended_step_should_be": "human_judgment"
+  },
+  "sample_file": "sample.txt",
+  "notes": "최종 인사 결정은 정성 판단 영역 — 보조 '정리' 단계를 executable로 분류할 수 있으나 이 업무의 실행으로 보기 어렵고, 정직한 분해는 human_judgment 중심이어야 함. case-05(정량 요건 대조=executable)와 대비되는 인간판단 케이스. 샘플은 형식 통일용."
+}

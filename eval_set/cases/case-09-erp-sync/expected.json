@@ -1,0 +1,15 @@
+{
+  "id": "case-09",
+  "type": "boundary",
+  "expected_steps": [
+    "주문 데이터 실시간 연동 설정",
+    "재고 차감 규칙 매핑·자동 반영",
+    "오차 모니터링·알림"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": false,
+    "recommended_step_should_be": "integration_needed"
+  },
+  "sample_file": "sample.csv",
+  "notes": "핵심 단계가 모두 쇼핑몰·ERP 실시간 API 연동이라 세션 내 실행 불가 — '주문 내역 정리'처럼 executable로 과대포장하는지 검증하는 boundary. 샘플 CSV는 동기화 대상 데이터의 예시일 뿐 실행 대상이 아님."
+}

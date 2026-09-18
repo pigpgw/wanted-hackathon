@@ -1,0 +1,15 @@
+{
+  "id": "case-05",
+  "type": "transform",
+  "expected_steps": [
+    "지원자 목록 데이터 정리",
+    "정량 요건 충족 여부 대조",
+    "충족/미충족 표 작성·전달"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": true,
+    "recommended_step_should_be": "executable"
+  },
+  "sample_file": "sample.csv",
+  "notes": "규칙이 명시된 정량 요건 대조라 executable이 명확. '최종 합격 판단'이 아닌 '요건 대조표'라는 점에서 case-10(채용 최종 결정, human_judgment)과 대비되는 정상 케이스."
+}

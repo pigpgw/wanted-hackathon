@@ -1,0 +1,16 @@
+{
+  "id": "case-03",
+  "type": "report",
+  "expected_steps": [
+    "설문 응답 데이터 정리",
+    "문항별 점수 집계",
+    "주관식 의견 주제별 분류",
+    "결과 요약 공유 문서 작성"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": true,
+    "recommended_step_should_be": "executable"
+  },
+  "sample_file": "sample.csv",
+  "notes": "정량 점수 집계 + 주관식 주제 분류가 결합된 집계 유형. 고객 문의 분류 프리셋과 달리 1:1 답변이 아닌 통계·요약이 목적."
+}

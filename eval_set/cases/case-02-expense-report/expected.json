@@ -1,0 +1,15 @@
+{
+  "id": "case-02",
+  "type": "report",
+  "expected_steps": [
+    "팀원 경비 내역 수집·취합",
+    "항목별 지출 분류·집계",
+    "경비 보고서 양식으로 작성"
+  ],
+  "expected_automatable": {
+    "executable_at_least_one": true,
+    "recommended_step_should_be": "executable"
+  },
+  "sample_file": "sample.csv",
+  "notes": "경비 내역을 항목별로 분류·합계내는 정형 변환+보고 유형. 매출 보고서 프리셋과 구분되는 '지출·경비' 도메인. 인명·금액 모두 가상."
+}
