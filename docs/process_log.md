@@ -19,6 +19,8 @@
 | 2026-09-18 | BUILD | WP1 eval_set 확충 — 13케이스(정리·보고·변환 8 + 경계 5), 구조·expected.json 검증 통과, 프리셋과 불중복 | `eval_set/cases/` |
 | 2026-09-18 | BUILD | WP2 서비스 구현 — app/(3단계 UI + /api/decompose·execute·presets), Tailwind+shadcn, 프리셋 캐시·재시도·폴백. build 통과 + curl 계약 검증 | `app/`, `components/` — 오케스트레이터 검수로 execute 캐시 sample_data 일치 조건 추가 |
 | 2026-09-18 | EVAL | iter0 스모크 (mock 모드, 키 미설정): decompose 13/13·exec 13/13·P0 0·분류일치 9/13 — 파이프라인 검증용, 품질 수치 아님 | `eval_runs/2026-09-18T180855/` |
+| 2026-09-18 | EVAL | iter1 실측 (gemini-3.5-flash): exec 81.8%·P0 2 — 실패 전부 무료 티어 429 (20 RPM). 재시도를 429 retryDelay 적응 대기로 수정 | `eval_runs/2026-09-18T211345/` |
+| 2026-09-18 | EVAL | iter2 (gemini-3.1-flash-lite로 교체 — 3.5 포화): **exec 100%·P0 0·decompose 13/13**·분류일치 9/13. 잔여 = 경계 케이스 executable 과대포장 | `eval_runs/2026-09-18T212937/` |
 
 ## 앞으로 기록할 것 (빌드 단계부터)
 
