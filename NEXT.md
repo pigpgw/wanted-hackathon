@@ -17,5 +17,6 @@
 
 ## 메모
 
+- 2026-09-19 정리: `eval_runs/`(로컬 재생성 가능, gitignored)·`tsconfig.tsbuildinfo`·미사용 shadcn(`badge/card/progress`) 삭제. process_log의 eval_runs 경로 인용은 이력 참조로만 남음.
 - 로컬 `:3000`이 점유된 머신에서는 `PORT=3001 npm run dev`.
 - 레시피 링크는 `#r=` fragment에 워크플로 인코딩 — 서버 저장 없음. 링크 받은 사람은 서술 내용을 볼 수 있음(기밀 서술 주의).
