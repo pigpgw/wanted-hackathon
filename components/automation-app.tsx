@@ -143,7 +143,7 @@ const TYPE_META: Record<
   },
   integration_needed: {
     label: "연동 필요",
-    badgeClass: "bg-[#fff3e0] text-[#c26a00]",
+    badgeClass: "bg-[#fff3e0] text-[#ed6700]",
     icon: Plug,
   },
   human_judgment: {
@@ -237,7 +237,7 @@ function ErrorBox({
   retrying: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#fff0f1] px-4 py-3 text-sm text-destructive">
+    <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#ffeeee] px-4 py-3 text-sm text-destructive">
       <span className="flex items-center gap-2">
         <AlertTriangle className="size-4 shrink-0" />
         {message}
@@ -852,7 +852,7 @@ export function AutomationApp() {
                       stage === i + 1
                         ? "bg-primary text-primary-foreground"
                         : stage > i + 1
-                          ? "bg-[#d6e8ff] text-primary"
+                          ? "bg-[#c9e2ff] text-primary"
                           : "bg-[#e5e8eb] text-muted-foreground"
                     )}
                   >
@@ -937,7 +937,7 @@ export function AutomationApp() {
                 ))}
               </div>
               {presetSample && (
-                <p className="flex items-center gap-1.5 text-xs text-[#00a661]">
+                <p className="flex items-center gap-1.5 text-xs text-[#029359]">
                   <FileText className="size-3.5" />
                   예시 데이터({presetSample.name})가 준비됐습니다 — 3단계에서
                   바로 실행할 수 있습니다.
@@ -1017,8 +1017,8 @@ export function AutomationApp() {
                       className={cn(
                         "w-full rounded-[20px] border-2 p-5 text-left transition-all",
                         selected
-                          ? "border-primary bg-[#f5f9ff]"
-                          : "border-transparent bg-secondary hover:bg-[#e9edf2]"
+                          ? "border-primary bg-[#e8f3ff]"
+                          : "border-transparent bg-secondary hover:bg-[#e5e8eb]"
                       )}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -1055,7 +1055,7 @@ export function AutomationApp() {
 
               {/* 선택된 단계의 실행/안내 패널 */}
               {selectedStep && (
-                <div className="mt-5 rounded-[20px] bg-[#f5f9ff] p-5 sm:p-6" data-tour="execute-panel">
+                <div className="mt-5 rounded-[20px] bg-[#e8f3ff] p-5 sm:p-6" data-tour="execute-panel">
                   {selectedStep.execution_type === "executable" ? (
                     <div className="space-y-3.5">
                       <p className="text-base font-bold">
@@ -1084,7 +1084,7 @@ export function AutomationApp() {
                           onChange={onFileChange}
                         />
                         {activeSample && (
-                          <span className="flex items-center gap-1.5 text-sm font-medium text-[#00a661]">
+                          <span className="flex items-center gap-1.5 text-sm font-medium text-[#029359]">
                             <FileText className="size-4" />
                             {activeSample.name}
                             {activeSample.fromPreset && " (예시 데이터)"}
@@ -1114,7 +1114,7 @@ export function AutomationApp() {
                         />
                       </div>
                       {activeSample?.note && (
-                        <p className="text-xs text-[#c26a00]">
+                        <p className="text-xs text-[#ed6700]">
                           {activeSample.note} — 샘플 기준 실행 결과가
                           표시됩니다.
                         </p>
@@ -1214,7 +1214,7 @@ export function AutomationApp() {
                   <div className="mt-4 border-t border-border pt-4">
                     <p className="text-[15px] font-semibold">
                       이 빈도로 반복하면{" "}
-                      <span className="text-[#00a661]">
+                      <span className="text-[#029359]">
                         연 약 {annualHoursSaved}시간
                       </span>
                       을 아낄 수 있습니다
@@ -1234,7 +1234,7 @@ export function AutomationApp() {
                   >
                     {copiedArtifact ? (
                       <>
-                        <Check className="size-3.5 text-[#00a661]" />
+                        <Check className="size-3.5 text-[#029359]" />
                         복사됨
                       </>
                     ) : (
@@ -1295,7 +1295,7 @@ export function AutomationApp() {
 
               {/* v2 — 검증 카드: 결과물 속 수치·사실을 샘플 데이터와 대조 */}
               {executed.verification && executed.verification.items.length > 0 && (
-                <div className="mt-6 rounded-[20px] border border-[#d6e8ff] bg-[#f5f9ff] p-5">
+                <div className="mt-6 rounded-[20px] border border-[#c9e2ff] bg-[#e8f3ff] p-5">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="flex items-center gap-1.5 text-base font-bold text-[#1b64da]">
                       <ShieldCheck className="size-4" />
@@ -1305,8 +1305,8 @@ export function AutomationApp() {
                       className={cn(
                         "rounded-md px-1.5 py-0.5 text-[11px] font-bold",
                         executed.verification.source === "code"
-                          ? "bg-[#e3f9e9] text-[#00a661]"
-                          : "bg-[#fff3e0] text-[#c26a00]"
+                          ? "bg-[#f0faf6] text-[#029359]"
+                          : "bg-[#fff3e0] text-[#ed6700]"
                       )}
                     >
                       {executed.verification.source === "code"
@@ -1326,8 +1326,8 @@ export function AutomationApp() {
                           className={cn(
                             "mt-0.5 flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-[11px] font-bold",
                             item.status === "ok"
-                              ? "bg-[#e3f9e9] text-[#00a661]"
-                              : "bg-[#fff3e0] text-[#c26a00]"
+                              ? "bg-[#f0faf6] text-[#029359]"
+                              : "bg-[#fff3e0] text-[#ed6700]"
                           )}
                         >
                           {item.status === "ok" ? "일치" : "확인"}
@@ -1403,7 +1403,7 @@ export function AutomationApp() {
                   >
                     {copied ? (
                       <>
-                        <Check className="size-3.5 text-[#00a661]" />
+                        <Check className="size-3.5 text-[#029359]" />
                         복사됨
                       </>
                     ) : (
@@ -1425,12 +1425,12 @@ export function AutomationApp() {
               </div>
 
               {executed.caveats.length > 0 && (
-                <div className="mt-4 rounded-[20px] bg-[#fff8e6] p-5">
-                  <h3 className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#c26a00]">
+                <div className="mt-4 rounded-[20px] bg-[#fff9e7] p-5">
+                  <h3 className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#ed6700]">
                     <AlertTriangle className="size-4" />
                     확인 필요 사항
                   </h3>
-                  <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-[#8a5a00]">
+                  <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-[#ed6700]">
                     {executed.caveats.map((c, i) => (
                       <li key={i}>{c}</li>
                     ))}
@@ -1439,7 +1439,7 @@ export function AutomationApp() {
               )}
 
               {/* v2 — 레시피 링크: 다음 주엔 데이터만 교체 */}
-              <div className="mt-6 rounded-[20px] bg-[#f5f9ff] p-5">
+              <div className="mt-6 rounded-[20px] bg-[#e8f3ff] p-5">
                 <h3 className="flex items-center gap-1.5 text-base font-bold">
                   <Link2 className="size-4 text-primary" />
                   다음 주엔 데이터만 바꾸세요
@@ -1454,7 +1454,7 @@ export function AutomationApp() {
                 >
                   {copiedRecipe ? (
                     <>
-                      <Check className="size-4 text-[#00a661]" />
+                      <Check className="size-4 text-[#029359]" />
                       레시피 링크 복사됨
                     </>
                   ) : (
@@ -1580,7 +1580,7 @@ function NonExecutablePanel({
           onChange={onFileChange}
         />
         {sampleName && (
-          <span className="flex items-center gap-1.5 text-sm font-medium text-[#00a661]">
+          <span className="flex items-center gap-1.5 text-sm font-medium text-[#029359]">
             <FileText className="size-4" />
             {sampleName}
           </span>
