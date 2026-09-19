@@ -1,7 +1,9 @@
 # 제출 문서 초안 — 원티드 AI Championship 2026
 
-> 제출 폼 4개 필수 항목 초안. **[대괄호] = 빌드 후 채울 값**. 제출 전 `docs/submission/submission_checklist.md`로 최종 확인.
-> 근거가 필요한 수치는 `docs/discovery/problems.md` P1 / `docs/measurement.md` / `docs/process_log.md`에서 가져옴.
+> **실제 폼 필드 확인됨** (2026-09-19): 제목·한줄설명·해결하고자 한 문제·AI 활용 방식 및 결과(500자 제한)·사용 AI툴 및 기술 스택(칩 선택)·서비스 링크·대표 이미지·스크린샷(최대 5장 16:9).
+> **붙여넣기용 최종본: `~/Desktop/wanted-submission.md`** + 이미지 `~/Desktop/wanted-screenshots/` (0_대표이미지 + 1~5번).
+> 아래는 필드별 소스 텍스트. 제출 전 `docs/submission/submission_checklist.md`로 최종 확인.
+
 
 ## 1. 해결하고자 한 문제
 
