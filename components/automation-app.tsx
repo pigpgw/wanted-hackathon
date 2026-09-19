@@ -20,9 +20,14 @@ import {
   Upload,
   UserCheck,
   Wand2,
-  X,
   Zap,
 } from "lucide-react";
+import {
+  Joyride,
+  STATUS,
+  type EventData,
+  type Step,
+} from "react-joyride";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,6 +129,49 @@ function artifactToCsv(md: string): string | null {
   }
   return found ? "\uFEFF" + out.join("\n") : null;
 }
+
+// 첫 방문 Joyride 투어 — data-tour 속성이 붙은 실제 요소를 스포트라이트.
+// 2·3단계 요소는 조건부 렌더라 타겟 불가 → 화면 중앙 스텝으로 흐름 설명
+const TOUR_STEPS: Step[] = [
+  {
+    target: "body",
+    placement: "center",
+    title: "반복 업무 자동화 도우미",
+    content:
+      "말로 적은 업무를 AI가 단계로 나누고, 샘플 데이터로 실제로 한 번 실행해 결과물을 만들어줍니다. 30초면 사용법을 알 수 있어요.",
+  },
+  {
+    target: '[data-tour="description"]',
+    title: "1. 업무를 말로 적기",
+    content:
+      "매주·매일 반복하는 일을 있는 그대로 적으세요. 예: “매주 월요일 매출 표 정리해서 보고서 올려요”",
+  },
+  {
+    target: '[data-tour="options"]',
+    title: "2. 빈도·시간 (선택)",
+    content:
+      "얼마나 자주, 몇 분 걸리는 일인지 적으면 자동화하면 얼마나 아끼는지 계산해드려요.",
+  },
+  {
+    target: '[data-tour="presets"]',
+    title: "또는 예시로 바로 체험",
+    content:
+      "처음이면 이 버튼을 눌러보세요 — 준비된 업무와 예시 데이터로 바로 체험할 수 있습니다.",
+  },
+  {
+    target: '[data-tour="decompose"]',
+    title: "3. 업무 분해",
+    content:
+      "누르면 AI가 업무를 단계로 나누고, 단계마다 자동화 적합도 점수와 실행 가능 여부를 정직하게 판정해줍니다.",
+  },
+  {
+    target: "body",
+    placement: "center",
+    title: "이후 흐름",
+    content:
+      "분해 결과에서 단계를 고르고 → 데이터(엑셀 복사·파일)를 넣고 → 실행하면 결과물이 나옵니다. 수치는 코드가 재계산해 검증 카드로 보여주고, 엑셀·PDF로 바로 내보낼 수 있어요.",
+  },
+];
 
 // 토스 스타일 분류 배지 — flat, 채움형, 작은 텍스트
 const TYPE_META: Record<
@@ -306,7 +354,8 @@ export function AutomationApp() {
   const [executing, setExecuting] = useState(false);
   const [executeError, setExecuteError] = useState<string | null>(null);
   const [stageText, setStageText] = useState(""); // 진행 단계 안내 문구
-  const [guideOpen, setGuideOpen] = useState(false); // 첫 방문 사용법 카드
+  const [tourRun, setTourRun] = useState(false); // 첫 방문 Joyride 투어
+  const [tourKey, setTourKey] = useState(0); // 투어 재시작용 — remount로 0번 스텝부터
 
   const stepsRef = useRef<HTMLDivElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -335,9 +384,12 @@ export function AutomationApp() {
     history.replaceState(null, "", window.location.pathname);
   }, []);
 
-  // 첫 방문 사용법 카드 — 탭 닫으면 다시 보임(세션 한정, 개인데이터 아님)
+  // 첫 방문 Joyride 투어 자동 시작 — 닫으면 세션 동안 안 뜸(세션 한정, 개인데이터 아님)
   useEffect(() => {
-    if (!sessionStorage.getItem("wh-guide-seen")) setGuideOpen(true);
+    if (!sessionStorage.getItem("wh-guide-seen")) {
+      const t = setTimeout(() => setTourRun(true), 400); // 타겟 렌더 대기
+      return () => clearTimeout(t);
+    }
   }, []);
 
   // 진행 단계 안내 — 실제 LLM 호출 구간 동안 단계 문구를 순환 (가짜 % 아님)
@@ -650,9 +702,17 @@ export function AutomationApp() {
     window.print();
   }
 
-  function closeGuide() {
-    setGuideOpen(false);
-    sessionStorage.setItem("wh-guide-seen", "1");
+  // Joyride 투어 이벤트 — 완료/건너뛰기 시 닫고 세션 플래그 기록
+  function onTourEvent(data: EventData) {
+    if (data.status === STATUS.FINISHED || data.status === STATUS.SKIPPED) {
+      setTourRun(false);
+      sessionStorage.setItem("wh-guide-seen", "1");
+    }
+  }
+
+  function startTour() {
+    setTourKey((k) => k + 1); // remount → 항상 0번 스텝부터
+    setTourRun(true);
   }
 
   const execSecondsLabel = (s: number) =>
@@ -694,7 +754,7 @@ export function AutomationApp() {
             </h1>
             <button
               type="button"
-              onClick={() => setGuideOpen(true)}
+              onClick={startTour}
               className="no-print mt-1 shrink-0 rounded-full bg-secondary px-3.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary/70"
             >
               사용법
@@ -738,39 +798,6 @@ export function AutomationApp() {
           </div>
         </header>
 
-        {/* ============ 첫 방문 사용법 카드 (비개발자 온보딩) ============ */}
-        {guideOpen && (
-          <div className="no-print relative mb-6 rounded-2xl bg-[#e8f3ff] p-5 sm:p-6">
-            <button
-              type="button"
-              onClick={closeGuide}
-              aria-label="닫기"
-              className="absolute right-4 top-4 text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <X className="size-4" />
-            </button>
-            <p className="text-sm font-bold text-primary">이렇게 쓰세요</p>
-            <ol className="mt-3 space-y-2.5">
-              {[
-                "반복 업무를 말로 적고「업무 분해」를 누르세요",
-                "AI가 나눠준 단계 중 하나를 고르세요",
-                "데이터(엑셀 복사·파일)를 넣고 실행하면 결과물이 나옵니다",
-              ].map((t, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-sm text-foreground">
-                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                    {i + 1}
-                  </span>
-                  {t}
-                </li>
-              ))}
-            </ol>
-            <p className="mt-3.5 text-xs leading-relaxed text-muted-foreground">
-              처음이시면 아래 예시 버튼을 눌러 바로 체험해보세요. 입력한 내용과
-              파일은 저장되지 않습니다.
-            </p>
-          </div>
-        )}
-
         {/* ============ [1] 서술 입력 ============ */}
         <Section>
           <h2 className="text-lg font-bold sm:text-xl">
@@ -782,6 +809,7 @@ export function AutomationApp() {
 
           <div className="mt-5 space-y-4">
             <Textarea
+              data-tour="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="예: 매주 월요일 매출 CSV 정리해서 팀장님께 보고서로 올려요"
@@ -789,7 +817,7 @@ export function AutomationApp() {
               maxLength={1000}
               className="resize-y"
             />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2" data-tour="options">
               <div className="space-y-1.5">
                 <Label
                   htmlFor="frequency"
@@ -826,7 +854,7 @@ export function AutomationApp() {
               <p className="text-xs text-muted-foreground">
                 입력할 내용이 없어도 괜찮습니다 — 예시를 눌러 바로 체험하세요.
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2" data-tour="presets">
                 {presets.map((p) => (
                   <button
                     key={p.id}
@@ -867,6 +895,7 @@ export function AutomationApp() {
             )}
 
             <Button
+              data-tour="decompose"
               onClick={runDecompose}
               disabled={!description.trim() || decomposing}
               size="lg"
@@ -1387,6 +1416,31 @@ export function AutomationApp() {
           파일은 서버에 저장되지 않습니다.
         </footer>
       </div>
+
+      {/* 첫 방문 사용법 투어 (react-joyride) —「사용법」버튼으로 재시작 가능 */}
+      <Joyride
+        key={tourKey}
+        steps={TOUR_STEPS}
+        run={tourRun}
+        continuous
+        scrollToFirstStep
+        onEvent={onTourEvent}
+        locale={{
+          back: "이전",
+          close: "닫기",
+          last: "완료",
+          next: "다음",
+          skip: "건너뛰기",
+        }}
+        options={{
+          primaryColor: "#3182f6",
+          textColor: "#191f28",
+          zIndex: 10000,
+          showProgress: true,
+          spotlightRadius: 8,
+          buttons: ["back", "close", "primary", "skip"],
+        }}
+      />
     </div>
   );
 }
