@@ -121,13 +121,26 @@ function deriveValues(sample: string): Derived[] {
       }
     }
   }
+
+  // 원문 셀 값도 유도 — 결과물이 행 값을 그대로 인용하는 경우(가장 흔함)도 검증 대상.
+  // 집계값만 유도하면 "145,000"(실제 행 값)이 "확인 필요"로 잘못 표시됨
+  for (let i = 0; i < data.length; i++) {
+    const label = catCols.length
+      ? catCols.map((c) => data[i][c]).join("·")
+      : `${i + 1}행`;
+    for (const nc of numericCols) {
+      out.push({ value: Number(data[i][nc]), basis: `${label}의 ${header[nc]}` });
+    }
+  }
   return out;
 }
 
-// 결과물에서 검증 대상 수치 추출 — 콤마 숫자·%·단위 붙은 숫자 (날짜·SKU 번호 등 제외)
+// 결과물에서 검증 대상 수치 추출 — 콤마 숫자·쌩숫자(4자리+)·%·단위 붙은 숫자.
+// 쌩숫자는 날짜(2026-09-07)·코드(SKU-101)처럼 숫자 앞뒤에 - . , 가 붙은 건 제외 —
+// LLM이 "152,000" 대신 "152000"으로 쓰는 경우가 있어 콤마 없는 수치도 검증 대상이다
 function extractNumbers(artifact: string): { raw: string; value: number }[] {
   const re =
-    /\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?%|\d+(?:\.\d+)?(?=\s*(?:원|건|개|명|회|줄|시간|분|행))/g;
+    /\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?%|\d+(?:\.\d+)?(?=\s*(?:원|건|개|명|회|줄|시간|분|행))|(?<![\d.,\-])\d{4,}(?:\.\d+)?(?![\d.,\-])/g;
   const seen = new Set<string>();
   const out: { raw: string; value: number }[] = [];
   for (const m of artifact.matchAll(re)) {
@@ -142,6 +155,9 @@ function extractNumbers(artifact: string): { raw: string; value: number }[] {
 }
 
 function closeEnough(a: number, b: number): boolean {
+  // 정수끼리는 정확 일치만 인정 — 금액 합계의 0.5% 오차(482,000 vs 480,000)를 통과시키면 안 됨.
+  // 비율·평균 같은 비정수는 반올림 표기 차이가 흔하니 0.5% 허용
+  if (Number.isInteger(a) && Number.isInteger(b)) return a === b;
   return Math.abs(a - b) <= Math.max(0.6, Math.abs(b) * 0.005);
 }
 
