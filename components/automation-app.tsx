@@ -10,14 +10,17 @@ import {
   Copy,
   Download,
   FileText,
+  FileSpreadsheet,
   Link2,
   Loader2,
   Plug,
+  Printer,
   RotateCcw,
   ShieldCheck,
   Upload,
   UserCheck,
   Wand2,
+  X,
   Zap,
 } from "lucide-react";
 
@@ -81,6 +84,45 @@ function decodeRecipe(s: string): RecipePayload | null {
   } catch {
     return null;
   }
+}
+
+// 결과물 마크다운의 표를 엑셀용 CSV로 변환 — BOM 포함이라 엑셀에서 한글 깨짐 없이 열림
+function artifactToCsv(md: string): string | null {
+  const lines = md.split("\n");
+  const out: string[] = [];
+  let currentHeading = "";
+  let inTable = false;
+  let found = false;
+
+  const esc = (cell: string) =>
+    /[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    const h = /^(#{1,4})\s+(.*)/.exec(line);
+    if (h) currentHeading = h[2];
+    const isRow = line.startsWith("|") && line.endsWith("|");
+    const isSep = /^\|[\s:|-]+\|?$/.test(line) && line.includes("-");
+    if (isRow && !isSep) {
+      if (!inTable && currentHeading) {
+        out.push(esc(currentHeading)); // 표 위 소제목을 섹션 행으로
+        found = true;
+      }
+      inTable = true;
+      const cells = line
+        .slice(1, -1)
+        .split("|")
+        .map((c) => c.trim().replace(/\*\*/g, ""));
+      out.push(cells.map(esc).join(","));
+      found = true;
+    } else if (isSep) {
+      continue;
+    } else {
+      if (inTable) out.push(""); // 표 사이 빈 줄
+      inTable = false;
+    }
+  }
+  return found ? "\uFEFF" + out.join("\n") : null;
 }
 
 // 토스 스타일 분류 배지 — flat, 채움형, 작은 텍스트
@@ -263,6 +305,8 @@ export function AutomationApp() {
   const [decomposeError, setDecomposeError] = useState<string | null>(null);
   const [executing, setExecuting] = useState(false);
   const [executeError, setExecuteError] = useState<string | null>(null);
+  const [stageText, setStageText] = useState(""); // 진행 단계 안내 문구
+  const [guideOpen, setGuideOpen] = useState(false); // 첫 방문 사용법 카드
 
   const stepsRef = useRef<HTMLDivElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -290,6 +334,35 @@ export function AutomationApp() {
     setRecipeRestored(true);
     history.replaceState(null, "", window.location.pathname);
   }, []);
+
+  // 첫 방문 사용법 카드 — 탭 닫으면 다시 보임(세션 한정, 개인데이터 아님)
+  useEffect(() => {
+    if (!sessionStorage.getItem("wh-guide-seen")) setGuideOpen(true);
+  }, []);
+
+  // 진행 단계 안내 — 실제 LLM 호출 구간 동안 단계 문구를 순환 (가짜 % 아님)
+  useEffect(() => {
+    if (!executing && !decomposing) return;
+    const stages = executing
+      ? [
+          "데이터를 읽고 있습니다…",
+          "결과물을 작성하고 있습니다…",
+          "수치를 코드로 재계산하고 있습니다…",
+          "검증 카드를 만들고 있습니다…",
+        ]
+      : [
+          "업무를 읽고 있습니다…",
+          "단계로 나누고 있습니다…",
+          "자동화 적합도를 판정하고 있습니다…",
+        ];
+    let i = 0;
+    setStageText(stages[0]);
+    const t = setInterval(() => {
+      i = (i + 1) % stages.length;
+      setStageText(stages[i]);
+    }, 2600);
+    return () => clearInterval(t);
+  }, [executing, decomposing]);
 
   useEffect(() => {
     if (decomposed)
@@ -556,6 +629,32 @@ export function AutomationApp() {
     URL.revokeObjectURL(url);
   }
 
+  // 엑셀용 내보내기 — 결과물의 표를 CSV(BOM 포함)로 저장. 표가 없으면 버튼 비활성
+  const csvExport = executed ? artifactToCsv(executed.result_artifact) : null;
+
+  function downloadCsv() {
+    if (!executed || !csvExport) return;
+    const blob = new Blob([csvExport], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${decomposed?.task_title ?? "result"}-data.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // PDF — 시스템 인쇄 대화상자로 결과물만 출력 (인쇄 CSS가 나머지 UI를 숨김)
+  function printArtifact() {
+    window.print();
+  }
+
+  function closeGuide() {
+    setGuideOpen(false);
+    sessionStorage.setItem("wh-guide-seen", "1");
+  }
+
   const execSecondsLabel = (s: number) =>
     s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초` : `${s}초`;
 
@@ -587,11 +686,20 @@ export function AutomationApp() {
       <div className="mx-auto w-full max-w-2xl px-4 pb-20 pt-10 sm:px-6 sm:pt-14">
         {/* ============ 히어로 ============ */}
         <header className="mb-8 sm:mb-10">
-          <h1 className="text-[28px] font-extrabold leading-[1.25] tracking-tight sm:text-4xl">
-            조언이 아니라,
-            <br />
-            <span className="text-primary">실행.</span>
-          </h1>
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-[28px] font-extrabold leading-[1.25] tracking-tight sm:text-4xl">
+              조언이 아니라,
+              <br />
+              <span className="text-primary">실행.</span>
+            </h1>
+            <button
+              type="button"
+              onClick={() => setGuideOpen(true)}
+              className="no-print mt-1 shrink-0 rounded-full bg-secondary px-3.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary/70"
+            >
+              사용법
+            </button>
+          </div>
           <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground sm:text-base">
             반복 업무를 말로 적으면 AI가 단계로 분해하고, 샘플 데이터로 그
             자리에서 한 번 실행해 결과물을 보여줍니다.
@@ -629,6 +737,39 @@ export function AutomationApp() {
             ))}
           </div>
         </header>
+
+        {/* ============ 첫 방문 사용법 카드 (비개발자 온보딩) ============ */}
+        {guideOpen && (
+          <div className="no-print relative mb-6 rounded-2xl bg-[#e8f3ff] p-5 sm:p-6">
+            <button
+              type="button"
+              onClick={closeGuide}
+              aria-label="닫기"
+              className="absolute right-4 top-4 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <X className="size-4" />
+            </button>
+            <p className="text-sm font-bold text-primary">이렇게 쓰세요</p>
+            <ol className="mt-3 space-y-2.5">
+              {[
+                "반복 업무를 말로 적고「업무 분해」를 누르세요",
+                "AI가 나눠준 단계 중 하나를 고르세요",
+                "데이터(엑셀 복사·파일)를 넣고 실행하면 결과물이 나옵니다",
+              ].map((t, i) => (
+                <li key={i} className="flex items-start gap-2.5 text-sm text-foreground">
+                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                    {i + 1}
+                  </span>
+                  {t}
+                </li>
+              ))}
+            </ol>
+            <p className="mt-3.5 text-xs leading-relaxed text-muted-foreground">
+              처음이시면 아래 예시 버튼을 눌러 바로 체험해보세요. 입력한 내용과
+              파일은 저장되지 않습니다.
+            </p>
+          </div>
+        )}
 
         {/* ============ [1] 서술 입력 ============ */}
         <Section>
@@ -707,11 +848,22 @@ export function AutomationApp() {
             </div>
 
             {decomposeError && (
-              <ErrorBox
-                message={decomposeError}
-                onRetry={runDecompose}
-                retrying={decomposing}
-              />
+              <div className="space-y-2.5">
+                <ErrorBox
+                  message={decomposeError}
+                  onRetry={runDecompose}
+                  retrying={decomposing}
+                />
+                {presets.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => applyPreset(presets[0])}
+                    className="text-xs font-medium text-primary underline-offset-2 hover:underline"
+                  >
+                    안 되면 예시로 먼저 체험해보세요 →
+                  </button>
+                )}
+              </div>
             )}
 
             <Button
@@ -723,7 +875,7 @@ export function AutomationApp() {
               {decomposing ? (
                 <>
                   <Loader2 className="animate-spin" />
-                  업무를 분해하고 있습니다…
+                  {stageText || "업무를 분해하고 있습니다…"}
                 </>
               ) : (
                 "업무 분해하기"
@@ -811,8 +963,11 @@ export function AutomationApp() {
                         「{selectedStep.name}」 단계를 지금 바로 실행합니다.
                       </p>
                       <p className="text-sm leading-relaxed text-muted-foreground">
-                        샘플 파일(CSV/TXT/MD, 500KB 이하)을 업로드하거나 직접
-                        붙여넣으세요. 서버에 저장되지 않습니다.
+                        파일(CSV/TXT/MD, 500KB 이하)을 올리거나{" "}
+                        <strong className="text-foreground">
+                          엑셀에서 범위를 복사해 붙여넣기
+                        </strong>
+                        해도 됩니다. 서버에 저장되지 않습니다.
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
                         <Label
@@ -820,12 +975,12 @@ export function AutomationApp() {
                           className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary"
                         >
                           <Upload className="size-4" />
-                          파일 업로드
+                          파일 선택
                         </Label>
                         <input
                           id="sample-file"
                           type="file"
-                          accept=".csv,.txt,.md"
+                          accept=".csv,.tsv,.txt,.md"
                           className="hidden"
                           onChange={onFileChange}
                         />
@@ -840,7 +995,7 @@ export function AutomationApp() {
                       <Textarea
                         value={pasteText}
                         onChange={(e) => setPasteText(e.target.value)}
-                        placeholder="또는 여기에 샘플 데이터를 직접 붙여넣으세요 (CSV 행, 텍스트 등)"
+                        placeholder="또는 여기에 붙여넣으세요 — 엑셀에서 드래그·복사(Ctrl+C)한 표도 그대로 됩니다"
                         className="min-h-[80px] bg-background text-xs"
                       />
                       <div className="space-y-1.5">
@@ -887,14 +1042,14 @@ export function AutomationApp() {
                         {executing ? (
                           <>
                             <Loader2 className="animate-spin" />
-                            실행 중… (LLM이 데이터를 실제로 처리하고 있습니다)
+                            {stageText || "실행 중…"}
                           </>
                         ) : (
                           <>
                             <Zap />
                             {activeSample
                               ? "실행하기"
-                              : "샘플 데이터를 선택해 주세요"}
+                              : "데이터를 넣어 주세요"}
                           </>
                         )}
                       </Button>
@@ -971,7 +1126,7 @@ export function AutomationApp() {
 
               <div className="mt-6 flex items-center justify-between gap-2">
                 <h3 className="text-[15px] font-bold">결과물</h3>
-                <div className="flex gap-1.5">
+                <div className="no-print flex flex-wrap justify-end gap-1.5">
                   <Button
                     variant="outline"
                     size="sm"
@@ -993,6 +1148,31 @@ export function AutomationApp() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={downloadCsv}
+                    disabled={!csvExport}
+                    title={
+                      csvExport
+                        ? "결과물의 표를 엑셀에서 바로 여는 CSV로 저장합니다"
+                        : "이 결과물에는 내보낼 표가 없습니다"
+                    }
+                    className="gap-1"
+                  >
+                    <FileSpreadsheet className="size-3.5" />
+                    엑셀
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={printArtifact}
+                    title="인쇄 화면에서 PDF로 저장할 수 있습니다"
+                    className="gap-1"
+                  >
+                    <Printer className="size-3.5" />
+                    PDF
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={downloadArtifact}
                     className="gap-1"
                   >
@@ -1001,7 +1181,11 @@ export function AutomationApp() {
                   </Button>
                 </div>
               </div>
-              <div className="mt-2 text-[15px]">
+              {/* 인쇄 영역 — PDF 저장 시 이 부분만 출력됩니다 (globals.css @media print) */}
+              <div id="print-area" className="mt-2 text-[15px]">
+                <p className="mb-3 hidden border-b border-border pb-2 text-sm font-bold text-foreground print:block">
+                  {decomposed?.task_title} — 업무→실행 자동화기 결과물
+                </p>
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={mdComponents}
@@ -1256,7 +1440,7 @@ function NonExecutablePanel({
         <input
           id={`sample-file-${step.id}`}
           type="file"
-          accept=".csv,.txt,.md"
+          accept=".csv,.tsv,.txt,.md"
           className="hidden"
           onChange={onFileChange}
         />

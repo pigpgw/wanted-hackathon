@@ -13,6 +13,21 @@ function parseNum(s: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+// 구분자 감지: 첫 줄에서 탭(엑셀 붙여넣기)→세미콜론→콤마 순 — 모든 행에 동일 구분자가 있어야 함
+function detectDelimiter(lines: string[]): string | null {
+  if (lines.length < 2) return null;
+  for (const d of ["\t", ";", ","]) {
+    if (
+      lines[0].includes(d) &&
+      lines.every((l) => l.split(d).length === lines[0].split(d).length) &&
+      lines[0].split(d).length >= 2
+    ) {
+      return d;
+    }
+  }
+  return null;
+}
+
 // 샘플 데이터에서 유도 가능한 값들을 코드로 계산 (CSV면 그룹 집계, 아니면 원문 숫자)
 function deriveValues(sample: string): Derived[] {
   const lines = sample
@@ -22,8 +37,11 @@ function deriveValues(sample: string): Derived[] {
     .filter(Boolean);
   const out: Derived[] = [];
 
-  // CSV 감지: 2행 이상 + 모든 행의 필드 수 동일 + 헤더 존재
-  const rows = lines.map((l) => l.split(",").map((c) => c.trim()));
+  // 표 감지: 2행 이상 + 모든 행의 필드 수 동일 + 헤더 존재 — 구분자는 콤마·탭(엑셀 붙여넣기)·세미콜론
+  const delim = detectDelimiter(lines);
+  const rows = delim
+    ? lines.map((l) => l.split(delim).map((c) => c.trim()))
+    : [];
   const isCsv =
     rows.length >= 2 &&
     rows[0].length >= 2 &&
@@ -143,14 +161,16 @@ function contextScore(d: Derived, line: string): number {
   return toks.reduce((s, t) => s + (line.includes(t) ? 1 : 0), 0);
 }
 
-// 표 형태(CSV) 샘플인지 — 코드 재계산이 의미 있는 데이터인지 판별
+// 표 형태(콤마·탭·세미콜론) 샘플인지 — 코드 재계산이 의미 있는 데이터인지 판별
 export function isTabularSample(sample: string): boolean {
   const lines = sample
     .trim()
     .split("\n")
     .map((l) => l.trim())
     .filter(Boolean);
-  const rows = lines.map((l) => l.split(","));
+  const delim = detectDelimiter(lines);
+  if (!delim) return false;
+  const rows = lines.map((l) => l.split(delim));
   return (
     rows.length >= 2 &&
     rows[0].length >= 2 &&

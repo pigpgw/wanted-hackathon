@@ -5,13 +5,15 @@
 - 서비스 구현: 3단계 UI + `/api/decompose`·`/api/execute`·`/api/presets`·`/api/revise`(v2), 프리셋 캐시·429 적응 재시도. `npm run build` 통과.
 - **v2 "재작업 제거" 구현 완료**: ①`output_format` 사용자 양식 채움(캐시 우회) ②코드 재계산 검증 카드(`lib/verify.ts` — CSV 그룹 집계 대조, 불일치 시 재계산값 제시. LLM 자기 검증은 순환 논리라 폐기) ③`/api/revise` 자연어 수정+재검증 루프 ④레시피 링크(URL `#r=` fragment 인코딩 — stateless 유지). 프리셋 3종 검증 카드 포함. 실측: gpt-4o-mini 오계산(1,686,000/정답 1,886,000)을 코드 검증이 정확히 적발 → 수정 후 "3건 일치".
 - 디자인: 토스 디자인 시스템 전면 적용(#3182F6·플랫·그레이 입력) + 모바일 반응형.
+- **비개발자 UX·출력 양식 패스**: ①입력 — 엑셀 복사·붙여넣기(TSV) 인식, `lib/verify.ts` 탭·세미콜론 구분자 감지로 코드 검증 대상 포함 ②출력 — 복사/.md/**엑셀용 CSV(BOM)**/**PDF(인쇄)** 내보내기 4종, 결과물 렌더링=미리보기. 네이티브 .xlsx/.pptx는 non-goal(§9 사유) ③첫 방문 사용법 카드+「사용법」버튼(joyride 대신 자체 카드) ④실행 중 단계 안내 문구 순환 ⑤분해 실패 시 "예시로 체험" 탈출 버튼.
 - 평가셋 13케이스, 빌드 루프 4회 후 **동결**: exec 100% · P0 0 · 분류일치 10/13.
-- **배포**: https://wanted-hackathon.vercel.app — **v2 포함 최신 배포 완료** (`ae58d59`, `vercel deploy --prod`). 프로덕션에서 양식 채움·코드 검증 적발·revise·캐시 경로 전부 확인. 프로덕션 모델 `gpt-4o-mini`. 재배포는 `vercel deploy --prod` (git push 자동배포 아님).
+- **배포**: https://wanted-hackathon.vercel.app — v2 배포 완료(`ae58d59`). **UX 패스는 로컬 빌드 통과, 재배포 대기** — `vercel deploy --prod` 필요(git push 자동배포 아님). 프로덕션 모델 `gpt-4o-mini`.
 
 ## 남은 것 (제출, 마감 2026-09-21 00:00)
 
-1. 16:9 스크린샷 1~5장 (히어로 / 분해 맵 / 실행 결과 / **검증 카드 "확인 필요" 장면** / 레시피 링크 복원) → 제출 폼 작성.
-2. 제출 후: 심사 기간 매일 `./scripts/ops_check.sh https://wanted-hackathon.vercel.app`, OpenAI 크레딧 잔액 확인.
+1. `vercel deploy --prod`로 UX 패스 배포 → 프로덕션에서 엑셀 버튼·PDF 인쇄·사용법 카드 확인.
+2. 16:9 스크린샷 1~5장 (히어로+사용법 카드 / 분해 맵 / 실행 결과 / **검증 카드 "확인 필요"** / 내보내기 버튼 열린 상태) → 제출 폼 작성.
+3. 제출 후: 심사 기간 매일 `./scripts/ops_check.sh https://wanted-hackathon.vercel.app`, OpenAI 크레딧 잔액 확인.
 
 ## 메모
 
