@@ -130,48 +130,6 @@ function artifactToCsv(md: string): string | null {
   return found ? "\uFEFF" + out.join("\n") : null;
 }
 
-// 첫 방문 Joyride 투어 — data-tour 속성이 붙은 실제 요소를 스포트라이트.
-// 2·3단계 요소는 조건부 렌더라 타겟 불가 → 화면 중앙 스텝으로 흐름 설명
-const TOUR_STEPS: Step[] = [
-  {
-    target: "body",
-    placement: "center",
-    title: "반복 업무 자동화 도우미",
-    content:
-      "말로 적은 업무를 AI가 단계로 나누고, 샘플 데이터로 실제로 한 번 실행해 결과물을 만들어줍니다. 30초면 사용법을 알 수 있어요.",
-  },
-  {
-    target: '[data-tour="description"]',
-    title: "1. 업무를 말로 적기",
-    content:
-      "매주·매일 반복하는 일을 있는 그대로 적으세요. 예: “매주 월요일 매출 표 정리해서 보고서 올려요”",
-  },
-  {
-    target: '[data-tour="options"]',
-    title: "2. 빈도·시간 (선택)",
-    content:
-      "얼마나 자주, 몇 분 걸리는 일인지 적으면 자동화하면 얼마나 아끼는지 계산해드려요.",
-  },
-  {
-    target: '[data-tour="presets"]',
-    title: "또는 예시로 바로 체험",
-    content:
-      "처음이면 이 버튼을 눌러보세요 — 준비된 업무와 예시 데이터로 바로 체험할 수 있습니다.",
-  },
-  {
-    target: '[data-tour="decompose"]',
-    title: "3. 업무 분해",
-    content:
-      "누르면 AI가 업무를 단계로 나누고, 단계마다 자동화 적합도 점수와 실행 가능 여부를 정직하게 판정해줍니다.",
-  },
-  {
-    target: "body",
-    placement: "center",
-    title: "이후 흐름",
-    content:
-      "분해 결과에서 단계를 고르고 → 데이터(엑셀 복사·파일)를 넣고 → 실행하면 결과물이 나옵니다. 수치는 코드가 재계산해 검증 카드로 보여주고, 엑셀·PDF로 바로 내보낼 수 있어요.",
-  },
-];
 
 // 토스 스타일 분류 배지 — flat, 채움형, 작은 텍스트
 const TYPE_META: Record<
@@ -259,12 +217,12 @@ function ScoreDots({ score }: { score: number }) {
         <span
           key={i}
           className={cn(
-            "size-2 rounded-full",
+            "size-2.5 rounded-full",
             i < score ? "bg-primary" : "bg-muted-foreground/20"
           )}
         />
       ))}
-      <span className="ml-1 text-xs text-muted-foreground">{score}/5</span>
+      <span className="ml-1 text-xs font-semibold text-muted-foreground">{score}/5</span>
     </span>
   );
 }
@@ -279,7 +237,7 @@ function ErrorBox({
   retrying: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-[#fff0f1] px-4 py-3 text-sm text-destructive">
+    <div className="flex items-center justify-between gap-3 rounded-2xl bg-[#fff0f1] px-4 py-3 text-sm text-destructive">
       <span className="flex items-center gap-2">
         <AlertTriangle className="size-4 shrink-0" />
         {message}
@@ -309,7 +267,7 @@ function Section({
   return (
     <section
       className={cn(
-        "rounded-2xl bg-card p-5 sm:p-7",
+        "rounded-[24px] bg-card p-6 sm:p-8",
         className
       )}
     >
@@ -359,6 +317,110 @@ export function AutomationApp() {
 
   const stepsRef = useRef<HTMLDivElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  // 인터랙티브 투어 — before 훅이 호출 시점의 최신 핸들러·상태를 보게 ref로 노출
+  const tourApi = useRef({ applyPreset, runDecompose, selectStep, runExecute });
+  const tourSnap = useRef({
+    presets,
+    description,
+    decomposed,
+    selectedStep,
+    executed,
+    executing,
+    decomposing,
+  });
+  tourApi.current = { applyPreset, runDecompose, selectStep, runExecute };
+  tourSnap.current = {
+    presets,
+    description,
+    decomposed,
+    selectedStep,
+    executed,
+    executing,
+    decomposing,
+  };
+
+  // 보여주기 전용이 아니라, 각 스텝의 before 훅이 실제 액션(예시 채우기→분해→
+  // 단계 선택→실행)을 수행해 화면이 진짜로 움직이는 가이드 데모
+  const [tourSteps] = useState<Step[]>(() => [
+    {
+      target: "body",
+      placement: "center",
+      title: "30초 실제 체험",
+      content:
+        "설명만 보여드리지 않고, 준비된 예시로 화면이 실제로 움직이는 걸 보여드릴게요. 각 단계 요소는 직접 눌러도 됩니다.",
+    },
+    {
+      target: '[data-tour="presets"]',
+      title: "1. 예시 불러오기",
+      content:
+        "「매주 매출 보고서」 예시를 방금 눌러드렸어요 — 업무 서술·빈도·시간과 샘플 데이터가 자동으로 채워졌습니다.",
+      before: async () => {
+        if (tourSnap.current.description.trim()) return;
+        for (let i = 0; i < 15 && !tourSnap.current.presets.length; i++)
+          await new Promise((r) => setTimeout(r, 200));
+        const p = tourSnap.current.presets[0];
+        if (p) tourApi.current.applyPreset(p);
+      },
+    },
+    {
+      target: '[data-tour="description"]',
+      title: "2. 업무 서술",
+      content:
+        "반복 업무를 이렇게 말로 적으면 됩니다. 지금은 예시 문구가 들어가 있어요.",
+    },
+    {
+      target: '[data-tour="decompose"]',
+      title: "3. 업무 분해",
+      content:
+        "방금 「업무 분해하기」가 실행됐어요 — AI가 업무를 단계로 나누고 단계별 자동화 적합도를 판정합니다.",
+      before: async () => {
+        const s = tourSnap.current;
+        if (!s.decomposed && !s.decomposing)
+          await tourApi.current.runDecompose();
+      },
+    },
+    {
+      target: '[data-tour="steps"]',
+      title: "4. 단계별 판정 결과",
+      content:
+        "단계마다 적합도 점수와 「즉시 실행·연동 필요·사람 판단」 분류가 붙어요. 추천 단계를 방금 선택했습니다.",
+      before: () => {
+        const s = tourSnap.current;
+        if (s.decomposed && !s.selectedStep) {
+          const rec =
+            s.decomposed.steps.find(
+              (w) => w.id === s.decomposed!.recommended_step_id
+            ) ?? s.decomposed.steps[0];
+          if (rec) tourApi.current.selectStep(rec);
+        }
+        return Promise.resolve();
+      },
+    },
+    {
+      target: '[data-tour="execute-panel"]',
+      title: "5. 데이터 확인·실행",
+      content:
+        "예시 데이터가 이미 들어 있어요. 방금 「실행하기」를 눌렀습니다 — 샘플 데이터로 실제 결과물을 만드는 중입니다.",
+      before: async () => {
+        const s = tourSnap.current;
+        if (!s.executed && !s.executing) await tourApi.current.runExecute();
+      },
+    },
+    {
+      target: '[data-tour="result"]',
+      title: "6. 결과물 + 검증 카드",
+      content:
+        "실제 결과물이 생성됐어요. 숫자는 코드가 재계산해 검증 카드로 보여주고, 엑셀·PDF로 바로 내보낼 수 있습니다.",
+    },
+    {
+      target: "body",
+      placement: "center",
+      title: "체험 완료",
+      content:
+        "지금 화면이 실제로 만들어진 결과물입니다. 「처음부터 다시 하기」로 내 업무를 넣거나, 레시피 링크를 저장해 다음 주에 재사용하세요.",
+    },
+  ]);
 
   useEffect(() => {
     fetch("/api/presets")
@@ -704,7 +766,11 @@ export function AutomationApp() {
 
   // Joyride 투어 이벤트 — 완료/건너뛰기 시 닫고 세션 플래그 기록
   function onTourEvent(data: EventData) {
-    if (data.status === STATUS.FINISHED || data.status === STATUS.SKIPPED) {
+    if (
+      data.status === STATUS.FINISHED ||
+      data.status === STATUS.SKIPPED ||
+      data.type === "error:target_not_found"
+    ) {
       setTourRun(false);
       sessionStorage.setItem("wh-guide-seen", "1");
     }
@@ -742,35 +808,39 @@ export function AutomationApp() {
   const STAGES = ["업무 서술", "분해·선택", "실행·결과"];
 
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
-      <div className="mx-auto w-full max-w-2xl px-4 pb-20 pt-10 sm:px-6 sm:pt-14">
+    <div className="min-h-screen bg-[#f2f4f6]">
+      <div className="mx-auto w-full max-w-[720px] px-4 pb-24 pt-12 sm:px-6 sm:pt-20">
         {/* ============ 히어로 ============ */}
-        <header className="mb-8 sm:mb-10">
+        <header className="mb-10 sm:mb-12">
           <div className="flex items-start justify-between gap-3">
-            <h1 className="text-[28px] font-extrabold leading-[1.25] tracking-tight sm:text-4xl">
-              조언이 아니라,
-              <br />
-              <span className="text-primary">실행.</span>
-            </h1>
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground sm:size-14 sm:rounded-[18px]">
+              <Zap className="size-6 sm:size-7" />
+            </div>
             <button
               type="button"
               onClick={startTour}
-              className="no-print mt-1 shrink-0 rounded-full bg-secondary px-3.5 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-secondary/70"
+              className="no-print shrink-0 rounded-full bg-card px-4 py-2 text-[13px] font-semibold text-secondary-foreground transition-colors hover:bg-secondary"
             >
               사용법
             </button>
           </div>
-          <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground sm:text-base">
-            반복 업무를 말로 적으면 AI가 단계로 분해하고, 샘플 데이터로 그
-            자리에서 한 번 실행해 결과물을 보여줍니다.
+          <h1 className="mt-6 text-[32px] font-extrabold leading-[1.3] tracking-tight sm:text-[44px]">
+            조언이 아니라,
+            <br />
+            <span className="text-primary">실행.</span>
+          </h1>
+          <p className="mt-4 text-base leading-relaxed text-[#4e5968] sm:text-lg">
+            반복 업무를 말로 적으면 AI가 단계로 분해하고,
+            <br className="sm:hidden" /> 샘플 데이터로 그 자리에서 한 번 실행해
+            결과물을 보여줍니다.
           </p>
           {/* 진행 표시 — 토스 스타일 스텝 */}
-          <div className="mt-5 flex items-center gap-1.5 text-xs sm:text-[13px]">
+          <div className="mt-7 flex items-center gap-2 text-[13px] sm:text-sm">
             {STAGES.map((label, i) => (
-              <div key={label} className="flex items-center gap-1.5">
+              <div key={label} className="flex items-center gap-2">
                 <span
                   className={cn(
-                    "flex items-center gap-1.5 font-medium transition-colors",
+                    "flex items-center gap-2 font-semibold transition-colors",
                     stage === i + 1
                       ? "text-primary"
                       : "text-muted-foreground"
@@ -778,20 +848,20 @@ export function AutomationApp() {
                 >
                   <span
                     className={cn(
-                      "flex size-5 items-center justify-center rounded-full text-[10px] font-bold",
+                      "flex size-7 items-center justify-center rounded-full text-xs font-bold",
                       stage === i + 1
                         ? "bg-primary text-primary-foreground"
                         : stage > i + 1
-                          ? "bg-[#e8f3ff] text-primary"
-                          : "bg-secondary text-muted-foreground"
+                          ? "bg-[#d6e8ff] text-primary"
+                          : "bg-[#e5e8eb] text-muted-foreground"
                     )}
                   >
-                    {i + 1}
+                    {stage > i + 1 ? <Check className="size-3.5" /> : i + 1}
                   </span>
                   {label}
                 </span>
                 {i < 2 && (
-                  <ChevronRight className="size-3.5 text-muted-foreground/50" />
+                  <ChevronRight className="size-4 text-muted-foreground/50" />
                 )}
               </div>
             ))}
@@ -800,10 +870,10 @@ export function AutomationApp() {
 
         {/* ============ [1] 서술 입력 ============ */}
         <Section>
-          <h2 className="text-lg font-bold sm:text-xl">
+          <h2 className="text-xl font-bold tracking-tight sm:text-[22px]">
             어떤 반복 업무를 자동화하고 싶으세요?
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1.5 text-[15px] leading-relaxed text-secondary-foreground">
             업무를 말로 적어주세요. 파일 업로드는 3단계에서 합니다.
           </p>
 
@@ -860,7 +930,7 @@ export function AutomationApp() {
                     key={p.id}
                     type="button"
                     onClick={() => applyPreset(p)}
-                    className="rounded-full bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground transition-colors hover:bg-[#e5e8eb]"
+                    className="rounded-full bg-secondary px-4 py-2.5 text-sm font-semibold text-secondary-foreground transition-colors hover:bg-[#e5e8eb]"
                   >
                     {p.label}
                   </button>
@@ -915,18 +985,18 @@ export function AutomationApp() {
 
         {/* ============ [2] 분해 결과 ============ */}
         {decomposed && (
-          <div ref={stepsRef} className="mt-4 scroll-mt-4 sm:mt-6">
+          <div ref={stepsRef} className="mt-6 scroll-mt-6" data-tour="steps">
             <Section>
               {recipeRestored && (
-                <div className="mb-4 flex items-center gap-2 rounded-xl bg-[#e8f3ff] px-4 py-3 text-sm font-medium text-[#1b64da]">
+                <div className="mb-4 flex items-center gap-2 rounded-2xl bg-[#e8f3ff] px-4 py-3 text-sm font-medium text-[#1b64da]">
                   <Link2 className="size-4 shrink-0" />
                   저장된 레시피를 불러왔습니다 — 새 데이터만 넣고 실행하세요.
                 </div>
               )}
-              <h2 className="text-lg font-bold sm:text-xl">
+              <h2 className="text-xl font-bold tracking-tight sm:text-[22px]">
                 {decomposed.task_title}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1.5 text-[15px] leading-relaxed text-secondary-foreground">
                 {decomposed.steps.length}개 단계로 분해했습니다. 실행할 단계
                 1개를 선택하세요 · 수동 소요 약{" "}
                 {decomposed.manual_minutes_est}분
@@ -945,7 +1015,7 @@ export function AutomationApp() {
                       type="button"
                       onClick={() => selectStep(step)}
                       className={cn(
-                        "w-full rounded-2xl border-2 p-4 text-left transition-all sm:p-5",
+                        "w-full rounded-[20px] border-2 p-5 text-left transition-all",
                         selected
                           ? "border-primary bg-[#f5f9ff]"
                           : "border-transparent bg-secondary hover:bg-[#e9edf2]"
@@ -975,7 +1045,7 @@ export function AutomationApp() {
                       <div className="mt-2">
                         <ScoreDots score={step.score} />
                       </div>
-                      <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                      <p className="mt-1.5 text-sm leading-relaxed text-secondary-foreground">
                         {step.rationale}
                       </p>
                     </button>
@@ -985,10 +1055,10 @@ export function AutomationApp() {
 
               {/* 선택된 단계의 실행/안내 패널 */}
               {selectedStep && (
-                <div className="mt-4 rounded-2xl bg-[#f5f9ff] p-4 sm:p-5">
+                <div className="mt-5 rounded-[20px] bg-[#f5f9ff] p-5 sm:p-6" data-tour="execute-panel">
                   {selectedStep.execution_type === "executable" ? (
                     <div className="space-y-3.5">
-                      <p className="text-[15px] font-bold">
+                      <p className="text-base font-bold">
                         「{selectedStep.name}」 단계를 지금 바로 실행합니다.
                       </p>
                       <p className="text-sm leading-relaxed text-muted-foreground">
@@ -1001,7 +1071,7 @@ export function AutomationApp() {
                       <div className="flex flex-wrap items-center gap-2">
                         <Label
                           htmlFor="sample-file"
-                          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary"
+                          className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-background px-4 py-2.5 text-sm font-semibold text-secondary-foreground transition-colors hover:bg-[#e5e8eb]"
                         >
                           <Upload className="size-4" />
                           파일 선택
@@ -1103,27 +1173,27 @@ export function AutomationApp() {
 
         {/* ============ [3] 실행 결과 ============ */}
         {executed && (
-          <div ref={resultRef} className="mt-4 scroll-mt-4 sm:mt-6">
+          <div ref={resultRef} className="mt-6 scroll-mt-6" data-tour="result">
             <Section>
-              <h2 className="text-lg font-bold sm:text-xl">
+              <h2 className="text-xl font-bold tracking-tight sm:text-[22px]">
                 {executedStepType === "executable"
                   ? "실행 결과"
                   : "생성된 아티팩트"}
               </h2>
               {executedStepType !== "executable" && (
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1.5 text-[15px] leading-relaxed text-secondary-foreground">
                   외부 연동/사람 승인 단계라 실행 대신 아티팩트를 생성했습니다.
                 </p>
               )}
 
               {/* 임팩트 스탯 — 토스 스타일 큰 숫자 */}
-              <div className="mt-5 rounded-2xl bg-secondary p-5 sm:p-6">
+              <div className="mt-5 rounded-[20px] bg-secondary p-5 sm:p-6">
                 <div className="flex flex-wrap items-end gap-x-6 gap-y-4 sm:gap-x-8">
                   <div>
                     <p className="text-[13px] font-medium text-muted-foreground">
                       수동 작업
                     </p>
-                    <p className="mt-0.5 text-2xl font-bold tracking-tight text-muted-foreground line-through decoration-muted-foreground/40 sm:text-3xl">
+                    <p className="mt-0.5 text-[26px] font-bold tracking-tight text-muted-foreground line-through decoration-muted-foreground/40 sm:text-3xl">
                       {executed.manual_minutes_est}분
                     </p>
                   </div>
@@ -1135,7 +1205,7 @@ export function AutomationApp() {
                       AI 실행
                       {executed.cached && " · 프리셋 사전 실측"}
                     </p>
-                    <p className="mt-0.5 text-3xl font-extrabold tracking-tight text-primary sm:text-4xl">
+                    <p className="mt-0.5 text-4xl font-extrabold tracking-tight text-primary sm:text-5xl">
                       {execSecondsLabel(executed.execution_seconds)}
                     </p>
                   </div>
@@ -1154,10 +1224,10 @@ export function AutomationApp() {
               </div>
 
               <div className="mt-6 flex items-center justify-between gap-2">
-                <h3 className="text-[15px] font-bold">결과물</h3>
+                <h3 className="text-base font-bold">결과물</h3>
                 <div className="no-print flex flex-wrap justify-end gap-1.5">
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={copyArtifact}
                     className="gap-1"
@@ -1175,7 +1245,7 @@ export function AutomationApp() {
                     )}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={downloadCsv}
                     disabled={!csvExport}
@@ -1190,7 +1260,7 @@ export function AutomationApp() {
                     엑셀
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={printArtifact}
                     title="인쇄 화면에서 PDF로 저장할 수 있습니다"
@@ -1200,7 +1270,7 @@ export function AutomationApp() {
                     PDF
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={downloadArtifact}
                     className="gap-1"
@@ -1225,9 +1295,9 @@ export function AutomationApp() {
 
               {/* v2 — 검증 카드: 결과물 속 수치·사실을 샘플 데이터와 대조 */}
               {executed.verification && executed.verification.items.length > 0 && (
-                <div className="mt-6 rounded-2xl border border-[#d6e8ff] bg-[#f5f9ff] p-5">
+                <div className="mt-6 rounded-[20px] border border-[#d6e8ff] bg-[#f5f9ff] p-5">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="flex items-center gap-1.5 text-[15px] font-bold text-[#1b64da]">
+                    <h3 className="flex items-center gap-1.5 text-base font-bold text-[#1b64da]">
                       <ShieldCheck className="size-4" />
                       검증 카드
                     </h3>
@@ -1244,7 +1314,7 @@ export function AutomationApp() {
                         : "AI 검토"}
                     </span>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1.5 text-[15px] leading-relaxed text-secondary-foreground">
                     {executed.verification.summary}
                     {executed.verification.source !== "code" &&
                       " — 자유 텍스트 데이터는 수치 재계산이 제한됩니다"}
@@ -1277,8 +1347,8 @@ export function AutomationApp() {
               )}
 
               {/* v2 — 자연어 수정 */}
-              <div className="mt-6 rounded-2xl bg-secondary p-5">
-                <h3 className="flex items-center gap-1.5 text-[15px] font-bold">
+              <div className="mt-6 rounded-[20px] bg-secondary p-5">
+                <h3 className="flex items-center gap-1.5 text-base font-bold">
                   <Wand2 className="size-4 text-primary" />
                   자연어로 수정
                 </h3>
@@ -1320,13 +1390,13 @@ export function AutomationApp() {
                 )}
               </div>
 
-              <div className="mt-6 rounded-2xl bg-secondary p-5">
+              <div className="mt-6 rounded-[20px] bg-secondary p-5">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <h3 className="text-[15px] font-bold">
+                  <h3 className="text-base font-bold">
                     재사용 프롬프트팩 · SOP
                   </h3>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={copyPromptPack}
                     className="gap-1"
@@ -1355,7 +1425,7 @@ export function AutomationApp() {
               </div>
 
               {executed.caveats.length > 0 && (
-                <div className="mt-4 rounded-2xl bg-[#fff8e6] p-5">
+                <div className="mt-4 rounded-[20px] bg-[#fff8e6] p-5">
                   <h3 className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#c26a00]">
                     <AlertTriangle className="size-4" />
                     확인 필요 사항
@@ -1369,19 +1439,18 @@ export function AutomationApp() {
               )}
 
               {/* v2 — 레시피 링크: 다음 주엔 데이터만 교체 */}
-              <div className="mt-6 rounded-2xl border border-border p-5">
-                <h3 className="flex items-center gap-1.5 text-[15px] font-bold">
+              <div className="mt-6 rounded-[20px] bg-[#f5f9ff] p-5">
+                <h3 className="flex items-center gap-1.5 text-base font-bold">
                   <Link2 className="size-4 text-primary" />
                   다음 주엔 데이터만 바꾸세요
                 </h3>
-                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                <p className="mt-1 text-[13px] leading-relaxed text-secondary-foreground">
                   이 링크를 저장해두면 업무 서술·분해·선택 단계·양식이 그대로
                   불려옵니다 — 다음 주엔 새 데이터만 넣고 바로 실행.
                 </p>
                 <Button
-                  variant="outline"
                   onClick={copyRecipeLink}
-                  className="mt-3 w-full gap-1.5 sm:w-auto"
+                  className="mt-3.5 w-full gap-1.5 sm:w-auto"
                 >
                   {copiedRecipe ? (
                     <>
@@ -1420,16 +1489,26 @@ export function AutomationApp() {
       {/* 첫 방문 사용법 투어 (react-joyride) —「사용법」버튼으로 재시작 가능 */}
       <Joyride
         key={tourKey}
-        steps={TOUR_STEPS}
+        steps={tourSteps}
         run={tourRun}
         continuous
         scrollToFirstStep
         onEvent={onTourEvent}
+        styles={{
+          tooltip: { borderRadius: 20, padding: "22px 22px 18px" },
+          tooltipTitle: { fontSize: 17, fontWeight: 700 },
+          tooltipContent: { fontSize: 14, lineHeight: 1.65, padding: "10px 0 0" },
+          buttonPrimary: { borderRadius: 12, fontWeight: 700 },
+          buttonBack: { fontWeight: 600, color: "#4e5968" },
+          buttonSkip: { fontWeight: 600, color: "#8b95a1" },
+          overlay: { backgroundColor: "rgba(0,0,0,0.45)" },
+        }}
         locale={{
           back: "이전",
           close: "닫기",
           last: "완료",
           next: "다음",
+          nextWithProgress: "다음 ({current}/{total})",
           skip: "건너뛰기",
         }}
         options={{
@@ -1437,7 +1516,9 @@ export function AutomationApp() {
           textColor: "#191f28",
           zIndex: 10000,
           showProgress: true,
+          skipBeacon: true,
           spotlightRadius: 8,
+          targetWaitTimeout: 8000,
           buttons: ["back", "close", "primary", "skip"],
         }}
       />
@@ -1468,7 +1549,7 @@ function NonExecutablePanel({
   const isIntegration = step.execution_type === "integration_needed";
   return (
     <div className="space-y-3.5">
-      <p className="text-[15px] font-bold">「{step.name}」</p>
+      <p className="text-base font-bold">「{step.name}」</p>
       {isIntegration ? (
         <p className="text-sm leading-relaxed text-muted-foreground">
           이 단계는 메일 발송·사내 DB·외부 채널 등{" "}
@@ -1486,7 +1567,7 @@ function NonExecutablePanel({
       <div className="flex flex-wrap items-center gap-2">
         <Label
           htmlFor={`sample-file-${step.id}`}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary"
+          className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-background px-4 py-2.5 text-sm font-semibold text-secondary-foreground transition-colors hover:bg-[#e5e8eb]"
         >
           <Upload className="size-4" />
           샘플 파일 (선택)

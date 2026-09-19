@@ -30,7 +30,7 @@
                        → 내보내기: 복사 / .md / 엑셀용 CSV / PDF(인쇄) + 레시피 링크
 ```
 
-**비개발자 UX 장치** — 첫 방문 **react-joyride 스텝 투어**(6스텝: 환영 중앙 → 서술 입력 → 빈도/시간 → 예시 버튼 → 분해 버튼 → 이후 흐름 중앙. `data-tour` 속성 스포트라이트, 조건부 렌더 요소는 중앙 스텝으로 대체. sessionStorage 플래그로 세션 1회 + 헤더「사용법」버튼 재시작), 실행 중 단계 안내 문구 순환("데이터를 읽는 중…→결과물 작성 중…→재계산 중…"), 결과물 미리보기는 마크다운 렌더링 자체가 프리뷰, 에러 상태에 "예시로 체험" 탈출 버튼.
+**비개발자 UX 장치** — 첫 방문 **react-joyride 인터랙티브 투어**(8스텝): 보여주기 전용이 아니라 각 스텝의 `before` 훅이 실제 액션을 수행 — 예시 채우기(applyPreset) → 분해(runDecompose) → 추천 단계 선택(selectStep) → 실행(runExecute, 프리셋은 캐시라 즉시). 스텝 타겟은 `data-tour` 속성(description/options/presets/decompose/steps/execute-panel/result), 실행 중 `waiting` 로더 + `targetWaitTimeout` 8s, 타겟 미발견(`error:target_not_found`)·건너뛰기·완료 시 투어 종료+sessionStorage 플래그(세션 1회), 헤더「사용법」버튼 재시작(key remount). 이미 진행된 상태에선 가드로 중복 실행 방지. 토스 블루·20px 라운드 툴팁 커스텀., 실행 중 단계 안내 문구 순환("데이터를 읽는 중…→결과물 작성 중…→재계산 중…"), 결과물 미리보기는 마크다운 렌더링 자체가 프리뷰, 에러 상태에 "예시로 체험" 탈출 버튼.
 
 ## 4. 입출력 계약
 
