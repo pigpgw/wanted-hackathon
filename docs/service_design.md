@@ -88,11 +88,12 @@
   "execution_seconds": 28,
   "manual_minutes_est": 40,
   "prompt_pack": "매주 재사용 가능한 프롬프트+SOP 텍스트",
-  "caveats": ["샘플 50행 기준 실행 — 실데이터는 검토 필요"],
+  "caveats": ["샘플 100행 기준 실행 — 실데이터는 검토 필요"],
   "cached": true,  // 선택 — 프리셋 사전 실측 결과를 그대로 반환한 경우만
-  "verification": {  // 선택 — 검증 카드. CSV면 lib/verify.ts 코드 재계산 결과, 아니면 LLM 생성 카드
+  "verification": {  // 선택 — 검증 카드. 표 데이터(CSV/TSV/세미콜론)면 lib/verify.ts 코드 재계산 결과, 아니면 LLM 생성 카드
     "items": [{"claim": "1,886,000", "basis": "재계산 일치 — amount 전체 합계", "status": "ok"}],
-    "summary": "결과물 속 수치 5건을 코드로 재계산 — 5건 일치"
+    "summary": "결과물 속 수치 5건을 코드로 재계산 — 5건 일치",
+    "source": "code"  // "code" = lib/verify.ts 재계산 / "llm" = AI 검토 — UI 배지로 구분 표기
   }
 }
 ```

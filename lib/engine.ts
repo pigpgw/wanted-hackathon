@@ -53,8 +53,8 @@ const REVISE_SYSTEM = `당신은 업무 결과물을 수정하는 에이전트�
 반드시 JSON만 출력: {"result_artifact": string(마크다운)}`;
 
 async function callLLM(system: string, user: string): Promise<string> {
-  const baseURL = process.env.LLM_BASE_URL ?? "https://api.upstage.ai/v1";
-  const model = process.env.LLM_MODEL ?? "solar-pro3";
+  const baseURL = process.env.LLM_BASE_URL ?? "https://api.openai.com/v1";
+  const model = process.env.LLM_MODEL ?? "gpt-4o-mini";
   const apiKey = process.env.LLM_API_KEY;
   if (!apiKey) throw new Error("LLM_API_KEY not set");
 

@@ -561,8 +561,8 @@ export function AutomationApp() {
     setFileError(null);
     if (!f) return;
     const ext = f.name.toLowerCase().split(".").pop() ?? "";
-    if (!["csv", "txt", "md"].includes(ext)) {
-      setFileError(".csv / .txt / .md 파일만 업로드할 수 있습니다");
+    if (!["csv", "tsv", "txt", "md"].includes(ext)) {
+      setFileError(".csv / .tsv / .txt / .md 파일만 업로드할 수 있습니다");
       return;
     }
     if (f.size > MAX_FILE_BYTES) {
@@ -571,11 +571,11 @@ export function AutomationApp() {
     }
     let text = await f.text();
     let note: string | null = null;
-    if (ext === "csv") {
+    if (ext === "csv" || ext === "tsv") {
       const lines = text.split("\n");
       if (lines.length > MAX_CSV_ROWS) {
         text = lines.slice(0, MAX_CSV_ROWS).join("\n");
-        note = `CSV가 커서 앞 ${MAX_CSV_ROWS}행만 사용합니다 (전체 ${lines.length}행)`;
+        note = `파일이 커서 앞 ${MAX_CSV_ROWS}행만 사용합니다 (전체 ${lines.length}행)`;
       }
     }
     setFileSample({ name: f.name, text, note, fromPreset: false });
